@@ -111,7 +111,7 @@ export default function CartDrawer() {
         </div>
 
         {items.length > 0 && (
-          <div className="border-t border-white/10 p-6 bg-neutral-900/20">
+          <div className="border-t border-white/10 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-neutral-900/20">
             <div className="flex items-center justify-between mb-4">
               <span className="text-base font-medium text-neutral-300">Subtotal</span>
               <span className="text-lg font-bold text-white">KES {cartTotal.toLocaleString()}</span>
