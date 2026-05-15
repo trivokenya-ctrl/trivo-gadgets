@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Search, ShoppingBag, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
+import CartButton from "@/components/cart/CartButton";
 
 export default function Navbar() {
   return (
@@ -25,9 +26,7 @@ export default function Navbar() {
           <button className="hover:text-accent transition-colors">
             <Search className="h-5 w-5" />
           </button>
-          <button className="hover:text-accent transition-colors">
-            <ShoppingBag className="h-5 w-5" />
-          </button>
+          <CartButton />
         </div>
       </div>
     </header>

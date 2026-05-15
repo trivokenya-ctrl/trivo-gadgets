@@ -1,12 +1,15 @@
+"use client";
+
 import Image from "next/image";
-import { generateWhatsAppLink } from "@/lib/config";
 import { Database } from "@/types/database.types";
-import { ArrowRight } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
 export default function ProductCard({ product }: { product: Product }) {
   const inStock = product.stock > 0;
+  const { addToCart } = useCart();
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-card border border-white/5 transition-all hover:border-white/10 hover:bg-card-hover hover:shadow-2xl">
@@ -52,15 +55,13 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
           
           {inStock ? (
-            <a
-              href={generateWhatsAppLink(product.name, product.price)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => addToCart(product)}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-accent text-black transition-transform hover:scale-110"
-              aria-label={`Buy ${product.name} on WhatsApp`}
+              aria-label={`Add ${product.name} to cart`}
             >
-              <ArrowRight className="h-5 w-5" />
-            </a>
+              <ShoppingCart className="h-4 w-4" />
+            </button>
           ) : (
             <button
               disabled
