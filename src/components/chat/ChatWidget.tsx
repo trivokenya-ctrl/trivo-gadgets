@@ -1,22 +1,31 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles } from "lucide-react";
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const { messages, input, handleInputChange, handleSubmit, isLoading } = (useChat as any)({
     api: "/api/chat",
   });
 
+  useEffect(() => {
+    if (!hasAutoOpened && !isOpen) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+        setHasAutoOpened(true);
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasAutoOpened, isOpen]);
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pb-[env(safe-area-inset-bottom)]">
-      {/* Chat Window */}
       {isOpen && (
         <div className="mb-4 flex h-[500px] max-h-[70vh] w-[350px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-background shadow-2xl animate-in slide-in-from-bottom-10 zoom-in-95 duration-300">
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-white/10 bg-neutral-900/50 p-4 backdrop-blur-md">
             <div>
               <h3 className="font-bold text-white flex items-center gap-2">
@@ -24,9 +33,9 @@ export default function ChatWidget() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
-                Trivo Assistant
+                Kylo
               </h3>
-              <p className="text-xs text-neutral-400">Ask me anything!</p>
+              <p className="text-xs text-neutral-400">Trivo&apos;s AI assistant</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -36,12 +45,11 @@ export default function ChatWidget() {
             </button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center text-neutral-500 gap-2">
-                <MessageCircle className="h-8 w-8 opacity-20" />
-                <p className="text-sm">Hi! How can I help you today?</p>
+                <Sparkles className="h-8 w-8 opacity-20" />
+                <p className="text-sm">Hey! I&apos;m Kylo. Need help finding something?</p>
               </div>
             ) : (
               messages.map((m: any) => (
@@ -72,7 +80,6 @@ export default function ChatWidget() {
             )}
           </div>
 
-          {/* Input */}
           <form
             onSubmit={handleSubmit}
             className="border-t border-white/10 bg-neutral-900/50 p-4 backdrop-blur-md flex items-center gap-2"
@@ -81,7 +88,7 @@ export default function ChatWidget() {
               type="text"
               value={input}
               onChange={handleInputChange}
-              placeholder="Type your message..."
+              placeholder="Ask Kylo anything..."
               className="flex-1 bg-black/50 border border-white/10 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-accent transition-colors"
             />
             <button
@@ -95,14 +102,13 @@ export default function ChatWidget() {
         </div>
       )}
 
-      {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex h-14 w-14 items-center justify-center rounded-full bg-accent text-black shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-transform hover:scale-110 active:scale-95 ${
           isOpen ? "rotate-90 scale-0 opacity-0 absolute" : "rotate-0 scale-100 opacity-100 relative"
         }`}
       >
-        <MessageCircle className="h-6 w-6" />
+        <Sparkles className="h-6 w-6" />
       </button>
     </div>
   );

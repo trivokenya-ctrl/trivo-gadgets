@@ -1,12 +1,12 @@
 import { WHATSAPP_NUMBER } from "@/lib/config";
-import { MessageCircle, Camera, Linkedin, Twitter, Youtube } from "lucide-react";
+import { MessageCircle, Camera, Globe, X } from "lucide-react";
 import Link from "next/link";
 
 const socials = [
   { href: `https://wa.me/${WHATSAPP_NUMBER}`, icon: MessageCircle, label: "WhatsApp", hoverColor: "hover:text-accent" },
   { href: "https://instagram.com/trivokenya", icon: Camera, label: "Instagram", hoverColor: "hover:text-pink-500" },
-  { href: "https://x.com/trivokenya", icon: Twitter, label: "X / Twitter", hoverColor: "hover:text-blue-400" },
-  { href: "https://linkedin.com/company/trivokenya", icon: Linkedin, label: "LinkedIn", hoverColor: "hover:text-blue-600" },
+  { href: "https://x.com/trivokenya", icon: X, label: "X / Twitter", hoverColor: "hover:text-blue-400" },
+  { href: "https://linkedin.com/company/trivokenya", icon: Globe, label: "LinkedIn", hoverColor: "hover:text-blue-600" },
 ];
 
 export default function Footer() {

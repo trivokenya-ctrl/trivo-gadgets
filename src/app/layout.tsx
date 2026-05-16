@@ -4,6 +4,9 @@ import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
 import ChatWidget from "@/components/chat/ChatWidget";
+import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -65,6 +68,7 @@ export default function RootLayout({
           <CartDrawer />
         </CartProvider>
         <ChatWidget />
+        <PushNotificationPrompt />
 
         {/* JSON-LD Structured Data */}
         <script
@@ -95,6 +99,8 @@ export default function RootLayout({
             `,
           }}
         />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

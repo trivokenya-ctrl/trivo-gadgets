@@ -45,6 +45,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
+  // Protect /account routes - redirect to login if not authenticated
+  if (request.nextUrl.pathname.startsWith("/account")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/auth/login", request.url));
+    }
+  }
+
   return response;
 }
 

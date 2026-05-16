@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Database } from "@/types/database.types";
-import { Edit2, Trash2, Star, ExternalLink } from "lucide-react";
+import { Edit2, Trash2, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -31,23 +31,6 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
     
     setProducts(products.filter(p => p.id !== id));
     await supabase.from("products").delete().eq("id", id);
-  };
-
-  const handleToggleFeatured = async (id: string) => {
-    // Only one can be featured at a time
-    setProducts(products.map(p => ({ ...p, is_featured: p.id === id })));
-    
-    // First, un-feature all
-    await (supabase.from("products") as any).update({ is_featured: false }).neq("id", id);
-    // Then feature the selected one
-    await (supabase.from("products") as any).update({ is_featured: true }).eq("id", id);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
-    
-    setProducts(products.filter(p => p.id !== id));
-    await (supabase.from("products") as any).delete().eq("id", id);
   };
 
   return (
