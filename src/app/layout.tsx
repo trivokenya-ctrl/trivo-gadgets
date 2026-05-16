@@ -4,6 +4,7 @@ import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
 import ChatWidget from "@/components/chat/ChatWidget";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -65,6 +66,7 @@ export default function RootLayout({
           <CartDrawer />
         </CartProvider>
         <ChatWidget />
+        <Analytics />
 
         {/* JSON-LD Structured Data */}
         <script
