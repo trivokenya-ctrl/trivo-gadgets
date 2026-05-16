@@ -7,6 +7,10 @@ import ChatWidget from "@/components/chat/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const siteUrl = "https://trivokenya.store";
+const siteName = "Trivo Kenya";
+const siteDescription = "Premium tech gadgets, smart home devices, and accessories in Kenya. Shop the latest drops with fast delivery nationwide.";
+
 export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   width: "device-width",
@@ -16,14 +20,36 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Trivo Kenya | Premium Tech Gadgets",
-  description: "Get exclusive premium tech gadgets, smart home devices, and accessories in Kenya.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} | Premium Tech Gadgets`,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Trivo Kenya",
+    title: siteName,
   },
+  openGraph: {
+    title: `${siteName} | Premium Tech Gadgets`,
+    description: siteDescription,
+    url: siteUrl,
+    siteName,
+    locale: "en_KE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteName} | Premium Tech Gadgets`,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  keywords: ["premium tech gadgets Kenya", "smart home devices Kenya", "tech accessories Kenya", "Trivo Kenya", "online gadget store Kenya"],
 };
 
 export default function RootLayout({
@@ -39,6 +65,23 @@ export default function RootLayout({
           <CartDrawer />
         </CartProvider>
         <ChatWidget />
+
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Store",
+              name: siteName,
+              url: siteUrl,
+              description: siteDescription,
+              image: `${siteUrl}/icons/icon-512x512.svg`,
+              address: { "@type": "PostalAddress", addressCountry: "KE" },
+              priceRange: "KES 500 - KES 500,000",
+            }),
+          }}
+        />
 
         {/* PWA Service Worker Registration */}
         <script

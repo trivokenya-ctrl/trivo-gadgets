@@ -1,10 +1,10 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Database } from "@/types/database.types";
-import { Edit2, Trash2, Star } from "lucide-react";
+import { Edit2, Trash2, Star, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -14,10 +14,23 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
   const supabase = createClient();
 
   const handleStockChange = async (id: string, newStock: number) => {
-    // Optimistic update
     setProducts(products.map(p => p.id === id ? { ...p, stock: newStock } : p));
     
-    await (supabase.from("products") as any).update({ stock: newStock }).eq("id", id);
+    await supabase.from("products").update({ stock: newStock }).eq("id", id);
+  };
+
+  const handleToggleFeatured = async (id: string) => {
+    setProducts(products.map(p => ({ ...p, is_featured: p.id === id })));
+    
+    await supabase.from("products").update({ is_featured: false }).neq("id", id);
+    await supabase.from("products").update({ is_featured: true }).eq("id", id);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    
+    setProducts(products.filter(p => p.id !== id));
+    await supabase.from("products").delete().eq("id", id);
   };
 
   const handleToggleFeatured = async (id: string) => {
@@ -87,9 +100,9 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
-                  <button className="p-1.5 text-neutral-400 hover:text-white transition-colors">
+                  <Link href={`/admin/products/${product.id}/edit`} className="p-1.5 text-neutral-400 hover:text-white transition-colors inline-block">
                     <Edit2 className="h-4 w-4" />
-                  </button>
+                  </Link>
                   <button 
                     onClick={() => handleDelete(product.id)}
                     className="p-1.5 text-neutral-400 hover:text-red-400 transition-colors"

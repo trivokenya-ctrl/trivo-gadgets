@@ -1,6 +1,13 @@
 import { WHATSAPP_NUMBER } from "@/lib/config";
-import { Camera, MessageCircle } from "lucide-react";
+import { MessageCircle, Camera, Linkedin, Twitter, Youtube } from "lucide-react";
 import Link from "next/link";
+
+const socials = [
+  { href: `https://wa.me/${WHATSAPP_NUMBER}`, icon: MessageCircle, label: "WhatsApp", hoverColor: "hover:text-accent" },
+  { href: "https://instagram.com/trivokenya", icon: Camera, label: "Instagram", hoverColor: "hover:text-pink-500" },
+  { href: "https://x.com/trivokenya", icon: Twitter, label: "X / Twitter", hoverColor: "hover:text-blue-400" },
+  { href: "https://linkedin.com/company/trivokenya", icon: Linkedin, label: "LinkedIn", hoverColor: "hover:text-blue-600" },
+];
 
 export default function Footer() {
   return (
@@ -16,24 +23,22 @@ export default function Footer() {
         </div>
 
         <div className="flex items-center gap-6">
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-neutral-300 hover:text-accent transition-colors"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <span className="text-sm font-medium">WhatsApp Us</span>
-          </a>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-neutral-300 hover:text-pink-500 transition-colors"
-          >
-            <Camera className="h-5 w-5" />
-            <span className="text-sm font-medium">Instagram</span>
-          </a>
+          {socials.map((s) => {
+            const Icon = s.icon;
+            return (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-2 text-neutral-300 ${s.hoverColor} transition-colors`}
+                aria-label={s.label}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-sm font-medium hidden sm:inline">{s.label}</span>
+              </a>
+            );
+          })}
         </div>
       </div>
       
