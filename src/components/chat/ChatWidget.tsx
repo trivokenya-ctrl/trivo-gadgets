@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useChat, Message } from "ai/react";
+import { useChat, type UIMessage } from "@ai-sdk/react";
 import { MessageCircle, X, Send } from "lucide-react";
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: "/api/chat",
+  });
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pb-[env(safe-area-inset-bottom)]">
@@ -41,7 +43,7 @@ export default function ChatWidget() {
                 <p className="text-sm">Hi! How can I help you today?</p>
               </div>
             ) : (
-              messages.map((m: Message) => (
+              messages.map((m: UIMessage) => (
                 <div
                   key={m.id}
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}

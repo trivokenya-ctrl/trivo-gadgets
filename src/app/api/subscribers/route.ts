@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // Send Welcome Email
     if (process.env.RESEND_API_KEY) {
       await resend.emails.send({
-        from: "Trivo Kenya <onboarding@resend.dev>", // replace with verified domain in prod
+        from: "Trivo Kenya <hello@trivokenya.store>", // Ensure this domain is verified in Resend
         to: email,
         subject: "Welcome to Trivo Kenya 🔥",
         html: `
