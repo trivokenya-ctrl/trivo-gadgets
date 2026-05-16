@@ -23,42 +23,41 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName, phone } },
-    });
-
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-      return;
-    }
-
-    if (!authData.user) {
-      setError("Something went wrong. Please try again.");
-      setLoading(false);
-      return;
-    }
-
-    if (authData.session) {
-      const { error: profileError } = await supabase.from("customers").insert({
-        user_id: authData.user.id,
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        full_name: fullName || null,
-        phone: phone || null,
+        password,
+        options: { data: { full_name: fullName, phone } },
       });
 
-      if (profileError) {
-        setError(profileError.message);
+      if (authError) {
+        setError(authError.message);
         setLoading(false);
         return;
       }
 
-      router.push("/account");
-      router.refresh();
-    } else {
-      setConfirmed(true);
+      if (authData.session && authData.user) {
+        const { error: profileError } = await supabase.from("customers").insert({
+          user_id: authData.user.id,
+          email,
+          full_name: fullName || null,
+          phone: phone || null,
+        });
+
+        if (profileError) {
+          setError(profileError.message);
+          setLoading(false);
+          return;
+        }
+
+        router.push("/account");
+        router.refresh();
+      } else {
+        setConfirmed(true);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
     }
   };
