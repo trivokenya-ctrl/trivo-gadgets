@@ -12,7 +12,6 @@ export async function POST(req: Request) {
 
     const supabase = createClient();
 
-    // Insert into Supabase
     const { error: dbError } = await supabase
       .from("subscribers")
       .insert([{ email }]);

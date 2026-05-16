@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from "react";
 import Image from "next/image";
@@ -16,7 +17,7 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
     // Optimistic update
     setProducts(products.map(p => p.id === id ? { ...p, stock: newStock } : p));
     
-    await supabase.from("products").update({ stock: newStock }).eq("id", id);
+    await (supabase.from("products") as any).update({ stock: newStock }).eq("id", id);
   };
 
   const handleToggleFeatured = async (id: string) => {
@@ -24,16 +25,16 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
     setProducts(products.map(p => ({ ...p, is_featured: p.id === id })));
     
     // First, un-feature all
-    await supabase.from("products").update({ is_featured: false }).neq("id", id);
+    await (supabase.from("products") as any).update({ is_featured: false }).neq("id", id);
     // Then feature the selected one
-    await supabase.from("products").update({ is_featured: true }).eq("id", id);
+    await (supabase.from("products") as any).update({ is_featured: true }).eq("id", id);
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     
     setProducts(products.filter(p => p.id !== id));
-    await supabase.from("products").delete().eq("id", id);
+    await (supabase.from("products") as any).delete().eq("id", id);
   };
 
   return (
