@@ -20,7 +20,7 @@ export default function BrandsSection() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-          {brands.map((brand, i) => (
+          {brands.map((brand) => (
             <div
               key={brand.name}
               className="group relative"
