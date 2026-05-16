@@ -13,10 +13,9 @@ export async function POST(req: Request) {
     const supabase = createClient();
 
     // Insert into Supabase
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: dbError } = await supabase
       .from("subscribers")
-      .insert([{ email }] as any);
+      .insert([{ email }]);
 
     if (dbError) {
       if (dbError.code === "23505") { // unique violation
