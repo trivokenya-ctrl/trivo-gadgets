@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const webpush = await import("web-push");
     const wp = webpush.default || webpush;
     wp.setVapidDetails(
-      "mailto:hello@trivokenya.store",
+      "mailto:info@trivokenya.store",
       process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
       vapidPrivateKey
     );
