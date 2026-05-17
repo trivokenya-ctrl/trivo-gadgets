@@ -41,7 +41,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save to localStorage when items change
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem("trivo_cart", JSON.stringify(items));
+      try {
+        localStorage.setItem("trivo_cart", JSON.stringify(items));
+      } catch (e) {
+        console.error("Failed to save cart to localStorage:", e);
+      }
     }
   }, [items, isMounted]);
 

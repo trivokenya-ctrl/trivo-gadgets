@@ -128,9 +128,7 @@ export default function ProductDetailClient({
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {relatedProducts.map((p) => (
-                  <Link key={p.id} href={`/products/${p.id}`}>
-                    <ProductCard product={p} />
-                  </Link>
+                  <ProductCard key={p.id} product={p} />
                 ))}
               </div>
             </section>

@@ -20,17 +20,30 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
   };
 
   const handleToggleFeatured = async (id: string) => {
+    const previous = [...products];
     setProducts(products.map(p => ({ ...p, is_featured: p.id === id })));
-    
-    await supabase.from("products").update({ is_featured: false }).neq("id", id);
-    await supabase.from("products").update({ is_featured: true }).eq("id", id);
+
+    const { error: err1 } = await supabase.from("products").update({ is_featured: false }).neq("id", id);
+    const { error: err2 } = await supabase.from("products").update({ is_featured: true }).eq("id", id);
+
+    if (err1 || err2) {
+      setProducts(previous);
+      console.error("Failed to toggle featured:", err1 || err2);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-    
+
+    const previous = [...products];
     setProducts(products.filter(p => p.id !== id));
-    await supabase.from("products").delete().eq("id", id);
+
+    const { error } = await supabase.from("products").delete().eq("id", id);
+
+    if (error) {
+      setProducts(previous);
+      console.error("Failed to delete product:", error);
+    }
   };
 
   return (

@@ -59,7 +59,7 @@ export default function AdminProductForm({ product }: { product?: Product }) {
     const payload = {
       name: form.name,
       description: form.description || null,
-      price: parseFloat(form.price),
+      price: parseInt(form.price) || 0,
       stock: parseInt(form.stock) || 0,
       category: form.category || null,
       image_url: form.image_url || null,

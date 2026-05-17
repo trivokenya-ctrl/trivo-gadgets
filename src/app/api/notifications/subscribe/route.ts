@@ -26,6 +26,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
+    const { data: existing } = await supabase
+      .from("notification_subscriptions")
+      .select("id")
+      .eq("customer_id", customer.id)
+      .filter("subscription->>endpoint", "eq", (subscription as Record<string, unknown>).endpoint as string)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json({ success: true });
+    }
+
     await supabase.from("notification_subscriptions").insert({
       customer_id: customer.id,
       subscription,
