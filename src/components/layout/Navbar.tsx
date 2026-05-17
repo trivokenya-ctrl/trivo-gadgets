@@ -39,12 +39,12 @@ export default function Navbar() {
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
-            <svg width="22" height="20" viewBox="0 0 36 32" fill="none" className="flex-shrink-0">
-              <polygon points="18,3 3,29 33,29" stroke="#2563EB" strokeWidth="3.5" strokeLinejoin="round"/>
-              <polygon points="18,14 10,29 26,29" fill="#2563EB" fillOpacity="0.2"/>
-            </svg>
-            <span className="text-xl font-bold tracking-tight">TRIVO KENYA</span>
+          <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
+            <img 
+              src={theme === "dark" ? "/logo-transparent.svg" : "/logo-light.svg"} 
+              alt="Trivo Kenya Logo" 
+              className="h-10 w-auto" 
+            />
           </Link>
         </div>
 

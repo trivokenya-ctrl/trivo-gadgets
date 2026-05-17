@@ -43,9 +43,13 @@ export default function ForgotPasswordPage() {
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-highlight/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground">
-            TRIVO <span className="text-accent">KENYA</span>
+        <div className="flex flex-col items-center mb-8">
+          <Link href="/" className="transition-opacity hover:opacity-90">
+            <img 
+              src="/logo-transparent.svg" 
+              alt="Trivo Kenya Logo" 
+              className="h-16 w-auto" 
+            />
           </Link>
           <p className="text-muted mt-2 text-sm">Reset your account password</p>
         </div>

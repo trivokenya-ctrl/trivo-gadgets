@@ -26,8 +26,12 @@ export default async function AccountPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-md px-4 md:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold tracking-tight text-foreground">
-          TRIVO <span className="text-accent">KENYA</span>
+        <Link href="/" className="transition-opacity hover:opacity-90">
+          <img 
+            src="/logo-transparent.svg" 
+            alt="Trivo Kenya Logo" 
+            className="h-10 w-auto" 
+          />
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
