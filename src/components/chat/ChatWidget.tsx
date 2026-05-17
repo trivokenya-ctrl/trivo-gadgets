@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { X, Send, Sparkles, MessageCircle } from "lucide-react";
 
 const suggestions = [
@@ -12,6 +11,13 @@ const suggestions = [
   "What audio products are available?",
 ];
 
+interface ChatHelpers {
+  messages: Array<{ id: string; role: string; content: string }>;
+  append: (message: { role: string; content: string }) => Promise<string | undefined>;
+  status: string;
+  error: Error | undefined;
+}
+
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
@@ -19,9 +25,9 @@ export default function ChatWidget() {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chat = useChat() as unknown as ChatHelpers;
+  const { messages, append, status, error } = chat;
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -35,12 +41,12 @@ export default function ChatWidget() {
     const text = input;
     setInput("");
     setShowSuggestions(false);
-    sendMessage({ text });
+    append({ role: "user", content: text });
   };
 
   const handleSuggestion = (text: string) => {
     setShowSuggestions(false);
-    sendMessage({ text });
+    append({ role: "user", content: text });
   };
 
   useEffect(() => {
@@ -125,7 +131,7 @@ export default function ChatWidget() {
                         : "bg-chat-bubble text-foreground border border-subtle rounded-bl-sm"
                     }`}
                   >
-                    {m.parts.filter((p): p is { type: "text"; text: string } => p.type === "text").map(p => p.text).join("")}
+                    {m.content}
                   </div>
                 </div>
               ))

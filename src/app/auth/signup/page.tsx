@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 import { Mail, Lock, User, Phone, Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
+
+interface SignupCaptchaWindow {
+  onSignUpCaptchaSuccess?: (token: string) => void;
+  onSignUpCaptchaExpired?: () => void;
+  onSignUpCaptchaError?: () => void;
+  hcaptcha?: {
+    reset: () => void;
+  };
+}
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -15,20 +25,56 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    const w = window as unknown as SignupCaptchaWindow;
+    w.onSignUpCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+    w.onSignUpCaptchaExpired = () => {
+      setCaptchaToken("");
+    };
+    w.onSignUpCaptchaError = () => {
+      setCaptchaToken("");
+    };
+
+    return () => {
+      delete w.onSignUpCaptchaSuccess;
+      delete w.onSignUpCaptchaExpired;
+      delete w.onSignUpCaptchaError;
+    };
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Please complete the captcha challenge.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, phone } },
+        options: {
+          data: { full_name: fullName, phone },
+          captchaToken,
+        },
       });
+
+      // Reset hCaptcha
+      const w = window as unknown as SignupCaptchaWindow;
+      if (w.hcaptcha) {
+        w.hcaptcha.reset();
+      }
+      setCaptchaToken("");
 
       if (authError) {
         setError(authError.message);
@@ -59,6 +105,12 @@ export default function SignupPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
+      // Reset hCaptcha on error
+      const w = window as unknown as SignupCaptchaWindow;
+      if (w.hcaptcha) {
+        w.hcaptcha.reset();
+      }
+      setCaptchaToken("");
     }
   };
 
@@ -174,6 +226,18 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* hCaptcha Widget */}
+            <div className="flex justify-center my-4">
+              <div
+                className="h-captcha"
+                data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
+                data-callback="onSignUpCaptchaSuccess"
+                data-expired-callback="onSignUpCaptchaExpired"
+                data-error-callback="onSignUpCaptchaError"
+                data-theme="dark"
+              />
+            </div>
+
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 text-sm text-red-400">
                 {error}
@@ -202,6 +266,7 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
+      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
     </div>
   );
 }

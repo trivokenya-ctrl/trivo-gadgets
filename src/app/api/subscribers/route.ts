@@ -3,12 +3,17 @@ import { createClient } from "@/lib/supabase/server";
 import { resend } from "@/lib/resend";
 
 async function verifyToken(token: string, ip: string): Promise<[boolean, string[]]> {
-  const payload = {
+  const payload: Record<string, string> = {
     secret: process.env.HCAPTCHA_SECRET_KEY || "",
     response: token,
-    remoteip: ip,
     sitekey: process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672",
   };
+  
+  // Only add remoteip if it is a valid non-loopback IP
+  if (ip && ip !== "::1" && ip !== "127.0.0.1" && !ip.startsWith("::ffff:127")) {
+    payload.remoteip = ip;
+  }
+
   const params = new URLSearchParams(payload);
   const res = await fetch("https://api.hcaptcha.com/siteverify", {
     method: "POST",
