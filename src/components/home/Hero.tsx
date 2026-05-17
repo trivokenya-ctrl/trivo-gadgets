@@ -11,7 +11,7 @@ export default function Hero({ product }: { product: Product | null }) {
   const whatsappLink = `https://wa.me/254757512769?text=${encodeURIComponent(`Hi! I'd like to order the ${product.name} at KES ${product.price.toLocaleString()}. Is it available?`)}`;
 
   return (
-    <section className="relative w-full min-h-[85vh] flex items-center overflow-hidden bg-[#050505]">
+    <section className="relative w-full min-h-[70vh] sm:min-h-[85vh] flex items-center overflow-hidden bg-[#050505]">
       {/* Dynamic Background Glow */}
       <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/20 rounded-full blur-[120px] opacity-50 mix-blend-screen pointer-events-none" />
       <div className="absolute top-1/2 right-1/4 translate-x-1/4 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[100px] opacity-30 mix-blend-screen pointer-events-none" />
@@ -20,7 +20,7 @@ export default function Hero({ product }: { product: Product | null }) {
         
         {/* Left Content */}
         <div className="flex-1 max-w-2xl space-y-8">
-          <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter text-white leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-8xl font-extrabold tracking-tighter text-white leading-[1.1]">
             {product.name}
           </h1>
           
@@ -31,7 +31,7 @@ export default function Hero({ product }: { product: Product | null }) {
           <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-8">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-neutral-500 uppercase tracking-widest mb-1">Price</span>
-              <p className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+              <p className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
                 KES {product.price.toLocaleString()}
               </p>
             </div>

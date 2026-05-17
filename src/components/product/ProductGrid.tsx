@@ -14,7 +14,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   }
 
   return (
-    <section id="products" className="py-24 container mx-auto px-4 md:px-8">
+    <section id="products" className="py-16 md:py-24 container mx-auto px-4 md:px-8">
       <div className="mb-12 flex flex-col items-center text-center">
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-4">
           All <span className="text-accent">Products</span>

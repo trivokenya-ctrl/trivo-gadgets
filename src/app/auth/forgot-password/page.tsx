@@ -1,30 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import Script from "next/script";
 import { Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
+
+interface ForgotCaptchaWindow {
+  onForgotCaptchaSuccess?: (token: string) => void;
+  onForgotCaptchaExpired?: () => void;
+  onForgotCaptchaError?: () => void;
+  hcaptcha?: {
+    reset: () => void;
+  };
+}
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const supabase = createClient();
+
+  useEffect(() => {
+    const w = window as unknown as ForgotCaptchaWindow;
+    w.onForgotCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+    w.onForgotCaptchaExpired = () => {
+      setCaptchaToken("");
+    };
+    w.onForgotCaptchaError = () => {
+      setCaptchaToken("");
+    };
+
+    return () => {
+      delete w.onForgotCaptchaSuccess;
+      delete w.onForgotCaptchaExpired;
+      delete w.onForgotCaptchaError;
+    };
+  }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Please complete the captcha challenge.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+        captchaToken,
       });
 
       if (error) {
         setError(error.message);
         setLoading(false);
+        const w = window as unknown as ForgotCaptchaWindow;
+        if (w.hcaptcha) {
+          w.hcaptcha.reset();
+        }
+        setCaptchaToken("");
         return;
       }
 
@@ -33,6 +75,11 @@ export default function ForgotPasswordPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
+      const w = window as unknown as ForgotCaptchaWindow;
+      if (w.hcaptcha) {
+        w.hcaptcha.reset();
+      }
+      setCaptchaToken("");
     }
   };
 
@@ -45,10 +92,10 @@ export default function ForgotPasswordPage() {
       <div className="relative w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <Link href="/" className="transition-opacity hover:opacity-90">
-            <img 
-              src="/logo-transparent.svg" 
-              alt="Trivo Kenya Logo" 
-              className="h-16 w-auto" 
+            <img
+              src="/logo-transparent.svg"
+              alt="Trivo Kenya Logo"
+              className="h-16 w-auto"
             />
           </Link>
           <p className="text-muted mt-2 text-sm">Reset your account password</p>
@@ -62,7 +109,7 @@ export default function ForgotPasswordPage() {
               </div>
               <h3 className="text-lg font-bold text-foreground">Check your inbox</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                We sent a password reset link to <span className="text-foreground font-medium">{email}</span>. 
+                We sent a password reset link to <span className="text-foreground font-medium">{email}</span>.
                 Please click the link in the email to set a new password.
               </p>
               <div className="pt-4">
@@ -94,6 +141,17 @@ export default function ForgotPasswordPage() {
                     className="w-full bg-overlay-heavy border border-default rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
                   />
                 </div>
+              </div>
+
+              <div className="flex justify-center my-4">
+                <div
+                  className="h-captcha"
+                  data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
+                  data-callback="onForgotCaptchaSuccess"
+                  data-expired-callback="onForgotCaptchaExpired"
+                  data-error-callback="onForgotCaptchaError"
+                  data-theme="dark"
+                />
               </div>
 
               {error && (
@@ -128,6 +186,7 @@ export default function ForgotPasswordPage() {
           )}
         </div>
       </div>
+      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
     </div>
   );
 }

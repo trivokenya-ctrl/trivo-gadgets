@@ -8,32 +8,40 @@ const openrouter = createOpenAI({
 });
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  try {
+    const { messages } = await req.json();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => [], setAll: () => {} } }
-  );
+    if (!messages || !Array.isArray(messages)) {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-  const { data: products } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => [], setAll: () => {} } }
+    );
 
-  const inventory =
-    products && products.length > 0
-      ? products
-          .map(
-            (p) =>
-              `[ID:${p.id}] ${p.name} | KES ${p.price.toLocaleString()} | Stock:${p.stock} | ${p.category || "General"} | ${p.description || ""}`
-          )
-          .join("\n")
-      : "The store currently has no products listed.";
+    const { data: products } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  const result = await streamText({
-    model: openrouter.chat("google/gemini-2.5-flash"),
-    system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
+    const inventory =
+      products && products.length > 0
+        ? products
+            .map(
+              (p) =>
+                `[ID:${p.id}] ${p.name} | KES ${p.price.toLocaleString()} | Stock:${p.stock} | ${p.category || "General"} | ${p.description || ""}`
+            )
+            .join("\n")
+        : "The store currently has no products listed.";
+
+    const result = await streamText({
+      model: openrouter.chat("google/gemini-2.5-flash"),
+      system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
 
 ## YOUR PERSONALITY
 SOPHISTICATED · WARM · PRECISE · LUXURY BRAND AMBASSADOR
@@ -61,13 +69,25 @@ Samsung · Apple · Sony · JBL · Bose · Xiaomi · Dyson · Anker
 6. If asked something you don't know, say "Let me connect you with our team on WhatsApp"
 7. Always include a direct call-to-action (view product, browse category, etc.)
 8. Never make up technical specifications`,
-    messages,
-    providerOptions: {
-      openai: {
-        maxCompletionTokens: 500,
+      messages,
+      providerOptions: {
+        openai: {
+          maxCompletionTokens: 500,
+        },
       },
-    },
-  });
+    });
 
-  return result.toTextStreamResponse();
+    return result.toTextStreamResponse();
+  } catch (err) {
+    console.error("Chat API error:", err);
+    return new Response(
+      JSON.stringify({
+        error: err instanceof Error ? err.message : "An unexpected error occurred",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }

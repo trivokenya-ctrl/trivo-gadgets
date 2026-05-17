@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Database } from "@/types/database.types";
-import { ArrowLeft, Zap, Shield, CheckCircle } from "lucide-react";
+import { ArrowLeft, Shield, CheckCircle, Truck } from "lucide-react";
 import { generateWhatsAppLink } from "@/lib/config";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -34,7 +34,7 @@ export default function ProductDetailClient({
           </Link>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-card border border-subtle">
+            <div className="relative aspect-[4/5] md:aspect-square rounded-3xl overflow-hidden bg-card border border-subtle">
               <Image
                 src={product.image_url || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=1200&auto=format&fit=crop"}
                 alt={product.name}
@@ -66,7 +66,7 @@ export default function ProductDetailClient({
               </p>
 
               <div className="flex items-baseline gap-4">
-                <span className="text-4xl font-bold text-foreground">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
                   KES {product.price.toLocaleString()}
                 </span>
                 {product.stock > 0 && product.stock < 5 && (
@@ -92,18 +92,34 @@ export default function ProductDetailClient({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-subtle">
-                <div className="flex items-center gap-3 text-sm text-muted">
-                  <Zap className="h-5 w-5 text-accent" />
-                  <span>Fast Delivery</span>
+              {/* Delivery and Payment Details Panel */}
+              <div className="border border-subtle rounded-2xl bg-card/50 p-6 space-y-4 pt-4 mt-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-1.5">
+                  <Truck className="h-4.5 w-4.5 text-accent" />
+                  Delivery & Payment Details
+                </h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div className="p-3.5 rounded-xl bg-surface/50 border border-default space-y-1">
+                    <span className="font-bold text-foreground block">📍 Nairobi Delivery</span>
+                    <span className="text-muted-foreground block leading-relaxed">Delivered within 1 to 2 days. You get to open and check your item before paying via M-PESA.</span>
+                  </div>
+                  
+                  <div className="p-3.5 rounded-xl bg-surface/50 border border-default space-y-1">
+                    <span className="font-bold text-foreground block">🌍 Upcountry Delivery</span>
+                    <span className="text-muted-foreground block leading-relaxed">Takes 2 to 3 days via courier. We share the tracking slip with you on WhatsApp as soon as it's sent.</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted">
-                  <CheckCircle className="h-5 w-5 text-accent" />
-                  <span>Quality Checked</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-muted">
-                  <Shield className="h-5 w-5 text-accent" />
-                  <span>Order via WhatsApp</span>
+
+                <div className="flex items-center gap-4 text-xs pt-3 border-t border-subtle">
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <CheckCircle className="h-4 w-4 text-accent" />
+                    <span>Quality Checked</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted">
+                    <Shield className="h-4 w-4 text-accent" />
+                    <span>100% Genuine Tech</span>
+                  </div>
                 </div>
               </div>
             </div>
