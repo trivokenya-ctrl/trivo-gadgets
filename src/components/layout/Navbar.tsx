@@ -7,7 +7,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useState, useRef, useEffect } from "react";
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,11 +40,15 @@ export default function Navbar() {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
           <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
-            <img 
-              src={theme === "dark" ? "/logo-transparent.svg" : "/logo-light.svg"} 
-              alt="Trivo Kenya Logo" 
-              className="h-10 w-auto" 
-            />
+            {mounted ? (
+              <img 
+                src={theme === "dark" ? "/logo-transparent.svg" : "/logo-light.svg"} 
+                alt="Trivo Kenya Logo" 
+                className="h-10 w-auto" 
+              />
+            ) : (
+              <div className="h-10 w-28 opacity-0" />
+            )}
           </Link>
         </div>
 
@@ -108,10 +112,10 @@ export default function Navbar() {
           </Link>
           <button
             onClick={toggleTheme}
-            className="hover:text-accent transition-colors"
+            className="hover:text-accent transition-colors w-5 h-5 flex items-center justify-center"
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
           >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {mounted ? (theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />) : <div className="w-5 h-5 opacity-0" />}
           </button>
           <CartButton />
         </div>
