@@ -1,7 +1,7 @@
 export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "254757512769";
 
 export const generateWhatsAppLink = (productName: string, price: number) => {
-  const message = `Hi Trivo Kenya! I'd like to order ${productName} at KES ${price.toLocaleString()}. Please confirm availability.`;
+  const message = `Hi! I'd like to order the ${productName} at KES ${price.toLocaleString()}. Is it available?`;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 };
 

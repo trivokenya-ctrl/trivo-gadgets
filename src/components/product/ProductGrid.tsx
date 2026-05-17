@@ -17,10 +17,10 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     <section id="products" className="py-24 container mx-auto px-4 md:px-8">
       <div className="mb-12 flex flex-col items-center text-center">
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-4">
-          Latest <span className="text-accent">Drops</span>
+          All <span className="text-accent">Products</span>
         </h2>
         <p className="text-muted max-w-xl">
-          Premium tech gadgets handpicked for quality and performance. Limited stock available.
+          Browse our full catalog of tech gadgets available for order in Kenya. Tap any item to view details, or order directly via WhatsApp.
         </p>
       </div>
       

@@ -18,7 +18,7 @@ export default function Footer() {
             TRIVO <span className="text-accent">KENYA</span>
           </Link>
           <p className="text-muted text-sm">
-            Premium tech drops, delivered fast.
+            Kenya&apos;s gadget store — chat, order, delivered.
           </p>
         </div>
 

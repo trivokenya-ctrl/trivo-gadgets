@@ -93,10 +93,10 @@ export default function SubscribeSection() {
         <div className="relative z-10 flex flex-col items-center text-center">
           <Mail className="h-12 w-12 text-foreground mb-6" />
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
-            Get exclusive tech drops before everyone else
+            Know when new stock lands in Kenya
           </h2>
           <p className="text-lg text-muted mb-10 max-w-xl">
-            Join the inner circle. We notify our subscribers first when premium stock arrives in Kenya. No spam, just hardware.
+            Be the first to know when fresh products arrive. No spam — just real stock updates.
           </p>
 
           <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-3 mb-6">
@@ -121,7 +121,7 @@ export default function SubscribeSection() {
               ) : status === "success" ? (
                 "Subscribed"
               ) : (
-                "Subscribe"
+                "Notify Me"
               )}
             </button>
           </form>

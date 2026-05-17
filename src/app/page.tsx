@@ -2,7 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
 import ProductGrid from "@/components/product/ProductGrid";
-import BrandsSection from "@/components/home/BrandsSection";
+
 import SubscribeSection from "@/components/home/SubscribeSection";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -35,7 +35,6 @@ export default async function Home() {
       <Navbar />
       <main className="flex-1 flex flex-col">
         <Hero product={featuredProduct} />
-        <BrandsSection />
         <ProductGrid products={gridProducts} />
         <SubscribeSection />
       </main>
