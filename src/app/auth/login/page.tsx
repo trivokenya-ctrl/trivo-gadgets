@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 import { Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react";
+
+interface LoginCaptchaWindow {
+  onLoginCaptchaSuccess?: (token: string) => void;
+  onLoginCaptchaExpired?: () => void;
+  onLoginCaptchaError?: () => void;
+  hcaptcha?: {
+    reset: () => void;
+  };
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,16 +22,49 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    const w = window as unknown as LoginCaptchaWindow;
+    w.onLoginCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+    w.onLoginCaptchaExpired = () => {
+      setCaptchaToken("");
+    };
+    w.onLoginCaptchaError = () => {
+      setCaptchaToken("");
+    };
+
+    return () => {
+      delete w.onLoginCaptchaSuccess;
+      delete w.onLoginCaptchaExpired;
+      delete w.onLoginCaptchaError;
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Please complete the captcha challenge.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
+
+      // Reset hCaptcha
+      const w = window as unknown as LoginCaptchaWindow;
+      if (w.hcaptcha) {
+        w.hcaptcha.reset();
+      }
+      setCaptchaToken("");
 
       if (error) {
         setError(error.message);
@@ -34,6 +77,11 @@ export default function LoginPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
+      const w = window as unknown as LoginCaptchaWindow;
+      if (w.hcaptcha) {
+        w.hcaptcha.reset();
+      }
+      setCaptchaToken("");
     }
   };
 
@@ -102,6 +150,18 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* hCaptcha Widget */}
+            <div className="flex justify-center my-4">
+              <div
+                className="h-captcha"
+                data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
+                data-callback="onLoginCaptchaSuccess"
+                data-expired-callback="onLoginCaptchaExpired"
+                data-error-callback="onLoginCaptchaError"
+                data-theme="dark"
+              />
+            </div>
+
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5 text-sm text-red-400">
                 {error}
@@ -130,6 +190,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
     </div>
   );
 }
