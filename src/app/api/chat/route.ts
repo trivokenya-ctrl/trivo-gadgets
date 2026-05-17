@@ -5,6 +5,10 @@ import { createServerClient } from "@supabase/ssr";
 const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
+  headers: {
+    "HTTP-Referer": "https://trivokenya.store",
+    "X-Title": "Trivo Kenya",
+  },
 });
 
 export async function POST(req: Request) {
@@ -70,11 +74,6 @@ Samsung · Apple · Sony · JBL · Bose · Xiaomi · Dyson · Anker
 7. Always include a direct call-to-action (view product, browse category, etc.)
 8. Never make up technical specifications`,
       messages,
-      providerOptions: {
-        openai: {
-          maxCompletionTokens: 500,
-        },
-      },
     });
 
     return result.toTextStreamResponse();

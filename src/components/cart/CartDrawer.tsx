@@ -56,7 +56,13 @@ export default function CartDrawer() {
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
               <ShoppingBag className="h-16 w-16 mb-4 opacity-20" />
-              <p>Your cart is empty.</p>
+              <p className="mb-2">Your cart is empty.</p>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-sm text-accent hover:underline font-medium"
+              >
+                Continue Shopping
+              </button>
             </div>
           ) : (
             <div className="flex flex-col gap-6">

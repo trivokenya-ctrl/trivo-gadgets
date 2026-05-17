@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
+import { Search, Menu, User, X, Sun, Moon, ChevronDown, Heart } from "lucide-react";
 import CartButton from "@/components/cart/CartButton";
 import { useTheme } from "@/context/ThemeContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useState, useRef, useEffect } from "react";
 
 export default function Navbar() {
   const { theme, toggleTheme, mounted } = useTheme();
+  const { items: wishlistItems } = useWishlist();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +98,14 @@ export default function Navbar() {
           <button onClick={() => setSearchOpen(true)} className="hover:text-accent transition-colors" aria-label="Open search">
             <Search className="h-5 w-5" />
           </button>
+          <Link href="/wishlist" className="relative hover:text-accent transition-colors" aria-label="Wishlist">
+            <Heart className="h-5 w-5" />
+            {wishlistItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg">
+                {wishlistItems.length}
+              </span>
+            )}
+          </Link>
           <Link href="/account" className="hover:text-accent transition-colors">
             <User className="h-5 w-5" />
           </Link>
