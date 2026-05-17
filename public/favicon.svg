@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="4" fill="#0a0a0a"/>
-  <polygon points="16,4 4,28 28,28" stroke="#2563EB" strokeWidth="3" strokeLinejoin="round" fill="none"/>
-  <polygon points="16,13 9,28 23,28" fill="#2563EB" fillOpacity="0.2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <text
+    x="32"
+    y="50"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="52"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#FFFFFF">T</text>
+  <rect x="18" y="54" width="28" height="4" rx="2" fill="#2563EB"/>
 </svg>
