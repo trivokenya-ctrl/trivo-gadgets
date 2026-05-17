@@ -4,6 +4,15 @@ import { useState, useEffect } from "react";
 import { Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import Script from "next/script";
 
+interface HCaptchaWindow {
+  onHCaptchaSuccess?: (token: string) => void;
+  onHCaptchaExpired?: () => void;
+  onHCaptchaError?: () => void;
+  hcaptcha?: {
+    reset: () => void;
+  };
+}
+
 export default function SubscribeSection() {
   const [email, setEmail] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
@@ -11,21 +20,22 @@ export default function SubscribeSection() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const w = window as unknown as HCaptchaWindow;
     // Bind hCaptcha callbacks to global window
-    (window as any).onHCaptchaSuccess = (token: string) => {
+    w.onHCaptchaSuccess = (token: string) => {
       setCaptchaToken(token);
     };
-    (window as any).onHCaptchaExpired = () => {
+    w.onHCaptchaExpired = () => {
       setCaptchaToken("");
     };
-    (window as any).onHCaptchaError = () => {
+    w.onHCaptchaError = () => {
       setCaptchaToken("");
     };
 
     return () => {
-      delete (window as any).onHCaptchaSuccess;
-      delete (window as any).onHCaptchaExpired;
-      delete (window as any).onHCaptchaError;
+      delete w.onHCaptchaSuccess;
+      delete w.onHCaptchaExpired;
+      delete w.onHCaptchaError;
     };
   }, []);
 
@@ -48,6 +58,7 @@ export default function SubscribeSection() {
       });
       
       const data = await res.json();
+      const w = window as unknown as HCaptchaWindow;
       
       if (res.ok) {
         setStatus("success");
@@ -55,15 +66,15 @@ export default function SubscribeSection() {
         setEmail("");
         setCaptchaToken("");
         // Reset the hCaptcha widget
-        if ((window as any).hcaptcha) {
-          (window as any).hcaptcha.reset();
+        if (w.hcaptcha) {
+          w.hcaptcha.reset();
         }
       } else {
         setStatus("error");
         setMessage(data.error || "Something went wrong. Please try again.");
         // Reset the hCaptcha widget
-        if ((window as any).hcaptcha) {
-          (window as any).hcaptcha.reset();
+        if (w.hcaptcha) {
+          w.hcaptcha.reset();
         }
       }
     } catch {
