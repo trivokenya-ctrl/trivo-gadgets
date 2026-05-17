@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
 import { generateCartWhatsAppLink } from "@/lib/config";
-import { ChevronRight, ShoppingBag, MapPin, Phone, User, MessageCircle, CheckCircle } from "lucide-react";
+import { ChevronRight, ShoppingBag, MapPin, Phone, User, MessageCircle, CheckCircle, Sparkles, Heart } from "lucide-react";
 
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
@@ -16,6 +16,9 @@ export default function CheckoutPage() {
   const [location, setLocation] = useState("");
   const [orderNote, setOrderNote] = useState("");
   const [placed, setPlaced] = useState(false);
+  const [popupVisible, setPopupVisible] = useState(false);
+
+  const showPopup = () => { setPlaced(true); setTimeout(() => setPopupVisible(true), 100); };
 
   const handlePlaceOrder = () => {
     const checkoutItems = items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price }));
@@ -25,37 +28,8 @@ export default function CheckoutPage() {
     const fullLink = link.replace("Please confirm availability.", `Please confirm availability.${customerInfo}${note}`);
     window.open(fullLink, "_blank");
     clearCart();
-    setPlaced(true);
+    showPopup();
   };
-
-  if (placed) {
-    return (
-      <>
-        <Navbar />
-        <main className="min-h-screen bg-background flex items-center justify-center px-4">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="h-8 w-8 text-accent" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground mb-3">Order Submitted!</h1>
-            <p className="text-muted text-sm mb-2">
-              We&apos;ve opened WhatsApp with your order details. Send the message and our team will confirm your order within minutes.
-            </p>
-            <p className="text-muted-foreground text-xs mb-8">
-              Have questions? Reply directly on the WhatsApp chat.
-            </p>
-            <Link
-              href="/"
-              className="inline-block rounded-full bg-accent text-black px-8 py-3.5 text-sm font-bold transition-all hover:scale-105 active:scale-95"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   return (
     <>
@@ -199,6 +173,42 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {/* Thank You Popup */}
+      {placed && popupVisible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 px-4">
+          <div className="w-full max-w-md rounded-3xl border border-default bg-card p-8 shadow-2xl text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500 delay-150">
+              <CheckCircle className="h-10 w-10 text-accent" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-foreground mb-3">Thank You! 🎉</h2>
+            <p className="text-muted text-sm mb-2 leading-relaxed">
+              Your order has been sent to our team via WhatsApp. We&apos;ll confirm it within minutes.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mb-6 bg-surface/30 rounded-xl px-4 py-3">
+              <Sparkles className="h-4 w-4 text-accent" />
+              <span>Keep an eye on your WhatsApp for a quick response</span>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/"
+                onClick={() => setPlaced(false)}
+                className="w-full rounded-full bg-accent text-black py-3.5 text-sm font-bold transition-all hover:scale-105 active:scale-95"
+              >
+                Continue Shopping
+              </Link>
+              <Link
+                href="/account"
+                className="w-full rounded-full border border-default text-foreground py-3.5 text-sm font-medium transition-all hover:bg-surface active:scale-95 inline-flex items-center justify-center gap-2"
+              >
+                <Heart className="h-4 w-4" />
+                View My Orders
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

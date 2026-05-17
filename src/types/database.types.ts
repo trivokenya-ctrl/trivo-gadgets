@@ -149,6 +149,40 @@ export type Database = {
           }
         ]
       }
+      reviews: {
+        Row: {
+          id: string
+          product_id: string
+          customer_name: string
+          rating: number
+          text: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          customer_name: string
+          rating: number
+          text: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          customer_name?: string
+          rating?: number
+          text?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       notification_subscriptions: {
         Row: {
           id: string

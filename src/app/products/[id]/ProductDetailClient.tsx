@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Database } from "@/types/database.types";
 import { Shield, CheckCircle, Truck, Heart, ShoppingCart, MessageCircle, Star } from "lucide-react";
@@ -12,6 +12,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
 import BackButton from "@/components/BackButton";
 import ShareButton from "@/components/ShareButton";
+import ReviewsSection from "@/components/reviews/ReviewsSection";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -95,14 +96,7 @@ export default function ProductDetailClient({
               </div>
 
               {/* Rating Row */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                  ))}
-                </div>
-                <span className="text-sm text-muted-foreground">(12 verified reviews)</span>
-              </div>
+              <ReviewRating productId={product.id} />
 
               <p className="text-lg text-subtle leading-relaxed">
                 {product.description}
@@ -204,53 +198,7 @@ export default function ProductDetailClient({
           </div>
 
           {/* Customer Reviews Section */}
-          <section className="mt-24">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-foreground">Customer Reviews</h2>
-              <p className="text-sm text-muted-foreground mt-1">What our customers say about this product</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                {
-                  name: "James K.",
-                  rating: 5,
-                  text: "Bought this for my daily commute and it's been amazing. The sound quality is incredible and battery lasts all week. Delivery was fast too!",
-                  date: "2 weeks ago",
-                },
-                {
-                  name: "Grace W.",
-                  rating: 5,
-                  text: "Authentic product at a great price. I checked the serial number and it's 100% genuine. Paid on delivery and everything was smooth.",
-                  date: "1 month ago",
-                },
-                {
-                  name: "Peter M.",
-                  rating: 4,
-                  text: "Solid product. Works exactly as described. Would have given 5 stars but the packaging was slightly squashed during delivery. Still works perfectly though.",
-                  date: "3 weeks ago",
-                },
-                {
-                  name: "Faith A.",
-                  rating: 5,
-                  text: "My second purchase from Trivo and they never disappoint. Quick WhatsApp response, delivered to my office in Westlands in just 1 day!",
-                  date: "2 months ago",
-                },
-              ].map((review, i) => (
-                <div key={i} className="rounded-2xl border border-subtle/20 bg-card/50 p-6 space-y-3">
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, s) => (
-                      <Star key={s} className={`h-4 w-4 ${s < review.rating ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30"}`} />
-                    ))}
-                  </div>
-                  <p className="text-sm text-foreground leading-relaxed">&ldquo;{review.text}&rdquo;</p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="font-medium">{review.name}</span>
-                    <span>{review.date}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ReviewsSection productId={product.id} productName={product.name} />
 
           {relatedProducts.length > 0 && (
             <section className="mt-24">
@@ -268,5 +216,31 @@ export default function ProductDetailClient({
       </main>
       <Footer />
     </>
+  );
+}
+
+function ReviewRating({ productId }: { productId: string }) {
+  const [reviews, setReviews] = useState<{ rating: number }[]>([]);
+  useEffect(() => {
+    import("@/lib/reviews").then((m) => setReviews(m.getReviews(productId)));
+  }, [productId]);
+  const avg = reviews.length > 0
+    ? Math.round((reviews.reduce((a, r) => a + r.rating, 0) / reviews.length) * 10) / 10
+    : 0;
+  return (
+    <div className="flex items-center gap-3">
+      {reviews.length > 0 ? (
+        <>
+          <div className="flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star key={star} className={`h-4 w-4 ${star <= Math.round(avg) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30"}`} />
+            ))}
+          </div>
+          <span className="text-sm text-muted-foreground">({reviews.length} {reviews.length === 1 ? "review" : "reviews"})</span>
+        </>
+      ) : (
+        <span className="text-sm text-muted-foreground">No reviews yet</span>
+      )}
+    </div>
   );
 }

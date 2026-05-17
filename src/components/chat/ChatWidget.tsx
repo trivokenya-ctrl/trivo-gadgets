@@ -49,7 +49,17 @@ export default function ChatWidget() {
     append({ role: "user", content: text });
   };
 
+  const [isDesktop, setIsDesktop] = useState(false);
+
   useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktop) return;
     if (!hasAutoOpened && !isOpen) {
       const timer = setTimeout(() => {
         setIsOpen(true);
@@ -57,7 +67,7 @@ export default function ChatWidget() {
       }, 15000);
       return () => clearTimeout(timer);
     }
-  }, [hasAutoOpened, isOpen]);
+  }, [hasAutoOpened, isOpen, isDesktop]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
