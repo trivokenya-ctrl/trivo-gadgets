@@ -1,16 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, CheckCircle2, AlertCircle } from "lucide-react";
+import Script from "next/script";
 
 export default function SubscribeSection() {
   const [email, setEmail] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    // Bind hCaptcha callbacks to global window
+    (window as any).onHCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+    (window as any).onHCaptchaExpired = () => {
+      setCaptchaToken("");
+    };
+    (window as any).onHCaptchaError = () => {
+      setCaptchaToken("");
+    };
+
+    return () => {
+      delete (window as any).onHCaptchaSuccess;
+      delete (window as any).onHCaptchaExpired;
+      delete (window as any).onHCaptchaError;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    if (!captchaToken) {
+      setStatus("error");
+      setMessage("Please complete the captcha challenge.");
+      return;
+    }
 
     setStatus("loading");
     
@@ -18,7 +44,7 @@ export default function SubscribeSection() {
       const res = await fetch("/api/subscribers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, captchaToken }),
       });
       
       const data = await res.json();
@@ -27,9 +53,18 @@ export default function SubscribeSection() {
         setStatus("success");
         setMessage("You're in. Keep an eye on your inbox.");
         setEmail("");
+        setCaptchaToken("");
+        // Reset the hCaptcha widget
+        if ((window as any).hcaptcha) {
+          (window as any).hcaptcha.reset();
+        }
       } else {
         setStatus("error");
         setMessage(data.error || "Something went wrong. Please try again.");
+        // Reset the hCaptcha widget
+        if ((window as any).hcaptcha) {
+          (window as any).hcaptcha.reset();
+        }
       }
     } catch {
       setStatus("error");
@@ -53,7 +88,7 @@ export default function SubscribeSection() {
             Join the inner circle. We notify our subscribers first when premium stock arrives in Kenya. No spam, just hardware.
           </p>
 
-          <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-3">
+          <form onSubmit={handleSubmit} className="w-full max-w-md flex flex-col sm:flex-row gap-3 mb-6">
             <input
               type="email"
               value={email}
@@ -80,21 +115,34 @@ export default function SubscribeSection() {
             </button>
           </form>
 
+          {/* hCaptcha Widget Container */}
+          <div className="mb-4">
+            <div
+              className="h-captcha"
+              data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY}
+              data-callback="onHCaptchaSuccess"
+              data-expired-callback="onHCaptchaExpired"
+              data-error-callback="onHCaptchaError"
+              data-theme="dark"
+            />
+          </div>
+
           {status === "success" && (
-            <div className="mt-6 flex items-center gap-2 text-accent bg-accent/10 px-4 py-2 rounded-full text-sm font-medium">
+            <div className="mt-2 flex items-center gap-2 text-accent bg-accent/10 px-4 py-2 rounded-full text-sm font-medium">
               <CheckCircle2 className="h-4 w-4" />
               {message}
             </div>
           )}
           
           {status === "error" && (
-            <div className="mt-6 flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-2 rounded-full text-sm font-medium">
+            <div className="mt-2 flex items-center gap-2 text-red-400 bg-red-400/10 px-4 py-2 rounded-full text-sm font-medium">
               <AlertCircle className="h-4 w-4" />
               {message}
             </div>
           )}
         </div>
       </div>
+      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
     </section>
   );
 }

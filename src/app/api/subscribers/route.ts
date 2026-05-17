@@ -2,12 +2,40 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { resend } from "@/lib/resend";
 
+async function verifyToken(token: string, ip: string): Promise<[boolean, string[]]> {
+  const payload = {
+    secret: process.env.HCAPTCHA_SECRET_KEY || "",
+    response: token,
+    remoteip: ip,
+    sitekey: process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "",
+  };
+  const params = new URLSearchParams(payload);
+  const res = await fetch(
+    "https://api.hcaptcha.com/siteverify",
+    { method: "POST", body: params },
+  );
+  const j = await res.json();
+  return j.success ? [true, []] : [false, j["error-codes"] || []];
+}
+
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, captchaToken } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    if (!captchaToken) {
+      return NextResponse.json({ error: "Please complete the captcha challenge" }, { status: 400 });
+    }
+
+    const ip = req.headers.get("x-forwarded-for") || "";
+    const [isCaptchaValid, captchaErrors] = await verifyToken(captchaToken, ip);
+
+    if (!isCaptchaValid) {
+      console.error("hCaptcha validation failed:", captchaErrors);
+      return NextResponse.json({ error: "Captcha verification failed. Please try again." }, { status: 400 });
     }
 
     const supabase = createClient();
