@@ -58,7 +58,7 @@ export default function Navbar() {
               Categories
               <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card/95 border border-subtle rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1 backdrop-blur-md">
+            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card border border-subtle rounded-xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
               <Link href="/categories/audio" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Audio</Link>
               <Link href="/categories/car-accessories" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Car Accessories</Link>
               <Link href="/categories/smart-home" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Smart Home</Link>
@@ -72,7 +72,7 @@ export default function Navbar() {
               Support
               <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card/95 border border-subtle rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1 backdrop-blur-md">
+            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card border border-subtle rounded-xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
               <Link href="/how-to-order" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">How to Order</Link>
               <Link href="/delivery" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Delivery Info</Link>
               <Link href="/returns" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Returns & Warranty</Link>

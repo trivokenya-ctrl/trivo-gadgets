@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { Database } from "@/types/database.types";
-import { ArrowLeft, Shield, CheckCircle, Truck } from "lucide-react";
+import { Shield, CheckCircle, Truck } from "lucide-react";
 import { generateWhatsAppLink } from "@/lib/config";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
+import BackButton from "@/components/BackButton";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -25,13 +25,7 @@ export default function ProductDetailClient({
       <Navbar />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-4 md:px-8 py-8">
-          <Link
-            href="/#products"
-            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Products
-          </Link>
+          <BackButton fallbackHref="/#products" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="relative aspect-[4/5] md:aspect-square rounded-3xl overflow-hidden bg-card border border-subtle">
