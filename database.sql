@@ -1,5 +1,5 @@
--- Table: products
-CREATE TABLE products (
+-- Products table
+CREATE TABLE IF NOT EXISTS products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -11,23 +11,15 @@ CREATE TABLE products (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table: subscribers
-CREATE TABLE subscribers (
+-- Subscribers table
+CREATE TABLE IF NOT EXISTS subscribers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   subscribed_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Seed Data for products
-INSERT INTO products (name, description, price, stock, category, is_featured, image_url) VALUES
-('TWS ANC Earbuds', 'Premium Active Noise Cancelling true wireless earbuds with 24hr battery life.', 3200, 10, 'Audio', true, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop'),
-('4K Mini Dashcam', 'Discreet and powerful 4K resolution dashcam for your daily commute.', 4800, 8, 'Car Accessories', false, 'https://images.unsplash.com/photo-1510511459019-5efa7ae97334?q=80&w=600&auto=format&fit=crop'),
-('RGB Smart Bulb', 'Voice-controlled 16-million color RGB smart bulb. Works with Alexa & Google Home.', 1800, 15, 'Smart Home', false, 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=600&auto=format&fit=crop'),
-('Magnetic 3-in-1 Wireless Charger', 'Fast charge your phone, watch, and earbuds simultaneously.', 2900, 12, 'Cables', false, 'https://images.unsplash.com/photo-1586953208448-b95a792e8c56?q=80&w=600&auto=format&fit=crop'),
-('Portable Tyre Inflator', 'Compact, battery-powered tyre inflator with digital pressure gauge.', 3500, 6, 'Car Accessories', false, 'https://images.unsplash.com/photo-1621259182978-fbf93132e53d?q=80&w=600&auto=format&fit=crop');
-
--- Table: customers (links to Supabase Auth)
-CREATE TABLE customers (
+-- Customers table (links to Supabase Auth)
+CREATE TABLE IF NOT EXISTS customers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
@@ -37,8 +29,8 @@ CREATE TABLE customers (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table: orders (WhatsApp orders linked to customers)
-CREATE TABLE orders (
+-- Orders table (WhatsApp orders linked to customers)
+CREATE TABLE IF NOT EXISTS orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
   items JSONB NOT NULL DEFAULT '[]',
@@ -49,47 +41,66 @@ CREATE TABLE orders (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table: notification_subscriptions (push notification subscriptions)
-CREATE TABLE notification_subscriptions (
+-- Notification subscriptions table
+CREATE TABLE IF NOT EXISTS notification_subscriptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
   subscription JSONB NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- RLS setup
+-- RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notification_subscriptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access on products" ON products
+-- Policies
+CREATE POLICY IF NOT EXISTS "Allow public read access on products" ON products
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow authenticated full access on products" ON products
+CREATE POLICY IF NOT EXISTS "Allow authenticated full access on products" ON products
   FOR ALL TO authenticated USING (true);
 
-CREATE POLICY "Allow public insert on subscribers" ON subscribers
+CREATE POLICY IF NOT EXISTS "Allow public insert on subscribers" ON subscribers
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated full access on subscribers" ON subscribers
+CREATE POLICY IF NOT EXISTS "Allow authenticated full access on subscribers" ON subscribers
   FOR ALL TO authenticated USING (true);
 
--- Customer RLS: customers can only read/update their own data
-CREATE POLICY "Allow customers to manage their own profile" ON customers
+CREATE POLICY IF NOT EXISTS "Allow customers to manage their own profile" ON customers
   FOR ALL TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- Orders RLS: customers can only see their own orders
-CREATE POLICY "Allow customers to manage their own orders" ON orders
+CREATE POLICY IF NOT EXISTS "Allow customers to manage their own orders" ON orders
   FOR ALL TO authenticated
   USING (customer_id IN (SELECT id FROM customers WHERE user_id = auth.uid()))
   WITH CHECK (customer_id IN (SELECT id FROM customers WHERE user_id = auth.uid()));
 
--- Notification subscriptions RLS
-CREATE POLICY "Allow customers to manage their own subscriptions" ON notification_subscriptions
+CREATE POLICY IF NOT EXISTS "Allow customers to manage their own subscriptions" ON notification_subscriptions
   FOR ALL TO authenticated
   USING (customer_id IN (SELECT id FROM customers WHERE user_id = auth.uid()))
   WITH CHECK (customer_id IN (SELECT id FROM customers WHERE user_id = auth.uid()));
+
+-- Seed data (skip if products already exist)
+INSERT INTO products (name, description, price, stock, category, is_featured, image_url)
+SELECT 'TWS ANC Earbuds', 'Premium Active Noise Cancelling true wireless earbuds with 24hr battery life.', 3200, 10, 'Audio', true, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop'
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'TWS ANC Earbuds');
+
+INSERT INTO products (name, description, price, stock, category, is_featured, image_url)
+SELECT '4K Mini Dashcam', 'Discreet and powerful 4K resolution dashcam for your daily commute.', 4800, 8, 'Car Accessories', false, 'https://images.unsplash.com/photo-1510511459019-5efa7ae97334?q=80&w=600&auto=format&fit=crop'
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = '4K Mini Dashcam');
+
+INSERT INTO products (name, description, price, stock, category, is_featured, image_url)
+SELECT 'RGB Smart Bulb', 'Voice-controlled 16-million color RGB smart bulb. Works with Alexa & Google Home.', 1800, 15, 'Smart Home', false, 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=600&auto=format&fit=crop'
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'RGB Smart Bulb');
+
+INSERT INTO products (name, description, price, stock, category, is_featured, image_url)
+SELECT 'Magnetic 3-in-1 Wireless Charger', 'Fast charge your phone, watch, and earbuds simultaneously.', 2900, 12, 'Cables', false, 'https://images.unsplash.com/photo-1586953208448-b95a792e8c56?q=80&w=600&auto=format&fit=crop'
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Magnetic 3-in-1 Wireless Charger');
+
+INSERT INTO products (name, description, price, stock, category, is_featured, image_url)
+SELECT 'Portable Tyre Inflator', 'Compact, battery-powered tyre inflator with digital pressure gauge.', 3500, 6, 'Car Accessories', false, 'https://images.unsplash.com/photo-1621259182978-fbf93132e53d?q=80&w=600&auto=format&fit=crop'
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Portable Tyre Inflator');
