@@ -68,7 +68,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="color-scheme" content="dark light" />
         <script dangerouslySetInnerHTML={{
-          __html: `(function(){try{var e=localStorage.getItem("trivo_theme")||"dark";document.documentElement.className=e}catch(e){}})()`,
+          __html: `(function(){try{var e=localStorage.getItem("trivo_theme")||"light";document.documentElement.className=e}catch(e){}})()`,
         }} />
       </head>
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-accent selection:text-black`}>

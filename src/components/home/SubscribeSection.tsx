@@ -130,7 +130,7 @@ export default function SubscribeSection() {
           <div className="mb-4">
             <div
               className="h-captcha"
-              data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY}
+              data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
               data-callback="onHCaptchaSuccess"
               data-expired-callback="onHCaptchaExpired"
               data-error-callback="onHCaptchaError"
