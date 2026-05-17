@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       : "The store currently has no products listed.";
 
   const result = await streamText({
-    model: openrouter("google/gemini-2.5-flash"),
+    model: openrouter.chat("google/gemini-2.5-flash"),
     system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
 
 ## YOUR PERSONALITY
@@ -62,6 +62,11 @@ Samsung · Apple · Sony · JBL · Bose · Xiaomi · Dyson · Anker
 7. Always include a direct call-to-action (view product, browse category, etc.)
 8. Never make up technical specifications`,
     messages,
+    providerOptions: {
+      openai: {
+        maxCompletionTokens: 500,
+      },
+    },
   });
 
   return result.toTextStreamResponse();

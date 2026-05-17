@@ -7,13 +7,16 @@ async function verifyToken(token: string, ip: string): Promise<[boolean, string[
     secret: process.env.HCAPTCHA_SECRET_KEY || "",
     response: token,
     remoteip: ip,
-    sitekey: process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "",
+    sitekey: process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672",
   };
   const params = new URLSearchParams(payload);
-  const res = await fetch(
-    "https://api.hcaptcha.com/siteverify",
-    { method: "POST", body: params },
-  );
+  const res = await fetch("https://api.hcaptcha.com/siteverify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
   const j = await res.json();
   return j.success ? [true, []] : [false, j["error-codes"] || []];
 }
