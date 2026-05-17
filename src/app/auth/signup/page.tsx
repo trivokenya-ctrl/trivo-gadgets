@@ -70,11 +70,11 @@ export default function SignupPage() {
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-3">Check your email</h1>
-          <p className="text-neutral-400 text-sm mb-2">
-            We sent a confirmation link to <span className="text-white font-medium">{email}</span>
+          <h1 className="text-2xl font-bold text-foreground mb-3">Check your email</h1>
+          <p className="text-muted text-sm mb-2">
+            We sent a confirmation link to <span className="text-foreground font-medium">{email}</span>
           </p>
-          <p className="text-neutral-500 text-xs mb-8">
+          <p className="text-muted-foreground text-xs mb-8">
             Click the link to activate your account, then sign in.
           </p>
           <Link
@@ -96,61 +96,61 @@ export default function SignupPage() {
 
       <div className="relative w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-white">
+          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground">
             TRIVO <span className="text-accent">KENYA</span>
           </Link>
-          <p className="text-neutral-400 mt-2 text-sm">Create your account</p>
+          <p className="text-muted mt-2 text-sm">Create your account</p>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
+        <div className="bg-surface/30 border border-default rounded-2xl p-8 backdrop-blur-xl">
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1.5">Full Name</label>
+              <label className="block text-sm font-medium text-subtle mb-1.5">Full Name</label>
               <div className="relative group">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-accent transition-colors" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full bg-black/50 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  className="w-full bg-overlay-heavy border border-default rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1.5">Phone Number</label>
+              <label className="block text-sm font-medium text-subtle mb-1.5">Phone Number</label>
               <div className="relative group">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-accent transition-colors" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+254 7XX XXX XXX"
-                  className="w-full bg-black/50 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  className="w-full bg-overlay-heavy border border-default rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-subtle mb-1.5">Email</label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-accent transition-colors" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="w-full bg-black/50 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  className="w-full bg-overlay-heavy border border-default rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-subtle mb-1.5">Password</label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500 group-focus-within:text-accent transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -158,12 +158,12 @@ export default function SignupPage() {
                   placeholder="Min. 6 characters"
                   required
                   minLength={6}
-                  className="w-full bg-black/50 border border-white/10 rounded-lg pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                  className="w-full bg-overlay-heavy border border-default rounded-lg pl-10 pr-10 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -190,7 +190,7 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-neutral-500 mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-6">
             Already have an account?{" "}
             <Link href="/auth/login" className="text-accent hover:underline font-medium">
               Sign in

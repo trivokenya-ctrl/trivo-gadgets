@@ -39,17 +39,17 @@ export default function SubscribeSection() {
 
   return (
     <section id="subscribe" className="py-24 container mx-auto px-4 md:px-8">
-      <div className="max-w-4xl mx-auto rounded-3xl bg-card border border-white/10 p-8 md:p-16 relative overflow-hidden">
+      <div className="max-w-4xl mx-auto rounded-3xl bg-card border border-default p-8 md:p-16 relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 rounded-full bg-highlight/20 blur-3xl" />
         <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 rounded-full bg-accent/10 blur-3xl" />
         
         <div className="relative z-10 flex flex-col items-center text-center">
-          <Mail className="h-12 w-12 text-white mb-6" />
-          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+          <Mail className="h-12 w-12 text-foreground mb-6" />
+          <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
             Get exclusive tech drops before everyone else
           </h2>
-          <p className="text-lg text-neutral-400 mb-10 max-w-xl">
+          <p className="text-lg text-muted mb-10 max-w-xl">
             Join the inner circle. We notify our subscribers first when premium stock arrives in Kenya. No spam, just hardware.
           </p>
 
@@ -61,7 +61,7 @@ export default function SubscribeSection() {
               placeholder="Enter your email"
               required
               disabled={status === "loading" || status === "success"}
-              className="flex-1 bg-background border border-white/10 rounded-full px-6 py-4 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50"
+              className="flex-1 bg-background border border-default rounded-full px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50"
             />
             <button
               type="submit"

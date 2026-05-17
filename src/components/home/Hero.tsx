@@ -22,7 +22,7 @@ export default function Hero({ product }: { product: Product | null }) {
         
         {/* Left Content */}
         <div className="flex-1 max-w-2xl space-y-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(255,255,255,0.1)]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-default bg-surface px-4 py-1.5 text-xs font-medium text-white backdrop-blur-xl shadow-[0_4px_24px_-8px_rgba(255,255,255,0.1)]">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
@@ -34,7 +34,7 @@ export default function Hero({ product }: { product: Product | null }) {
             {product.name}
           </h1>
           
-          <p className="text-lg md:text-xl text-neutral-400 max-w-lg text-balance leading-relaxed">
+          <p className="text-lg md:text-xl text-muted max-w-lg text-balance leading-relaxed">
             {product.description}
           </p>
 
@@ -59,7 +59,7 @@ export default function Hero({ product }: { product: Product | null }) {
 
         {/* Right Floating Image */}
         <div className="flex-1 w-full max-w-lg relative perspective-1000">
-          <div className="relative aspect-square w-full rounded-3xl overflow-hidden border border-white/10 bg-neutral-900/50 backdrop-blur-3xl shadow-2xl transform-gpu transition-transform duration-700 hover:rotate-y-12 hover:rotate-x-12">
+          <div className="relative aspect-square w-full rounded-3xl overflow-hidden border border-default bg-card/50 backdrop-blur-3xl shadow-2xl transform-gpu transition-transform duration-700 hover:rotate-y-12 hover:rotate-x-12">
             <Image
               src={product.image_url || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=1200&auto=format&fit=crop"}
               alt={product.name}

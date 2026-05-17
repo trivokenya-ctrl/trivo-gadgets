@@ -2,15 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 10, 10;
-  --background-end-rgb: 10, 10, 10;
+:root,
+.dark {
+  --color-background: #0a0a0a;
+  --color-foreground: #ffffff;
+  --color-card: #121212;
+  --color-card-hover: #1a1a1a;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-surface: #1a1a1a;
+  --color-muted: #a3a3a3;
+  --color-muted-foreground: #737373;
+  --color-subtle: #d4d4d4;
+  --color-overlay: rgba(255, 255, 255, 0.05);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.6);
+  --color-chat-bubble: #262626;
+}
+
+.light {
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+  --color-card: #fafafa;
+  --color-card-hover: #f5f5f5;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
+  --color-surface: #f0f0f0;
+  --color-muted: #525252;
+  --color-muted-foreground: #737373;
+  --color-subtle: #404040;
+  --color-overlay: rgba(0, 0, 0, 0.05);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.5);
+  --color-chat-bubble: #e5e5e5;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
+  background: var(--color-background);
+  color: var(--color-foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

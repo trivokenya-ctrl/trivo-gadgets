@@ -13,14 +13,14 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {user && (
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-md px-4 md:px-8 h-16 flex items-center justify-between">
-          <Link href="/admin" className="text-xl font-bold tracking-tight text-white">
+        <header className="sticky top-0 z-40 border-b border-default bg-background/80 backdrop-blur-md px-4 md:px-8 h-16 flex items-center justify-between">
+          <Link href="/admin" className="text-xl font-bold tracking-tight text-foreground">
             TRIVO <span className="text-accent">ADMIN</span>
           </Link>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="text-sm font-medium text-neutral-400 hover:text-white flex items-center gap-2 transition-colors"
+              className="text-sm font-medium text-muted hover:text-foreground flex items-center gap-2 transition-colors"
             >
               <LogOut className="h-4 w-4" />
               Sign Out

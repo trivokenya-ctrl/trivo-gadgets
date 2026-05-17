@@ -14,7 +14,7 @@ export default function BrandsSection() {
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
             Brands We <span className="text-accent">Carry</span>
           </h2>
         </div>
@@ -25,10 +25,10 @@ export default function BrandsSection() {
               key={brand.name}
               className="group relative"
             >
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/[0.08] flex items-center justify-center text-2xl md:text-3xl font-bold text-white/80 group-hover:text-accent group-hover:border-accent/30 group-hover:shadow-[0_0_30px_-5px_rgba(37,211,102,0.15)] transition-all duration-300">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-foreground/[0.07] to-foreground/[0.02] border border-subtle flex items-center justify-center text-2xl md:text-3xl font-bold text-foreground/80 group-hover:text-accent group-hover:border-accent/30 group-hover:shadow-[0_0_30px_-5px_rgba(37,211,102,0.15)] transition-all duration-300">
                 {brand.icon}
               </div>
-              <span className="block text-center text-xs text-neutral-600 mt-2 font-medium group-hover:text-neutral-400 transition-colors">
+              <span className="block text-center text-xs text-muted-foreground mt-2 font-medium group-hover:text-muted transition-colors">
                 {brand.name}
               </span>
             </div>

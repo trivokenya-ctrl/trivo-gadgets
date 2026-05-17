@@ -11,13 +11,13 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-background py-12">
+    <footer className="border-t border-default bg-background py-12">
       <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex flex-col items-center md:items-start">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-white mb-2">
+          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground mb-2">
             TRIVO <span className="text-accent">KENYA</span>
           </Link>
-          <p className="text-neutral-400 text-sm">
+          <p className="text-muted text-sm">
             Premium tech drops, delivered fast.
           </p>
         </div>
@@ -31,7 +31,7 @@ export default function Footer() {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-2 text-neutral-300 ${s.hoverColor} transition-colors`}
+                className={`flex items-center gap-2 text-subtle ${s.hoverColor} transition-colors`}
                 aria-label={s.label}
               >
                 <Icon className="h-5 w-5" />
@@ -42,7 +42,7 @@ export default function Footer() {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 md:px-8 mt-8 text-center text-xs text-neutral-500">
+      <div className="container mx-auto px-4 md:px-8 mt-8 text-center text-xs text-muted-foreground">
         &copy; {new Date().getFullYear()} Trivo Kenya. All rights reserved.
       </div>
     </footer>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import CartDrawer from "@/components/cart/CartDrawer";
 import ChatWidget from "@/components/chat/ChatWidget";
 import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
@@ -61,14 +62,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="color-scheme" content="dark light" />
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{var e=localStorage.getItem("trivo_theme")||"dark";document.documentElement.className=e}catch(e){}})()`,
+        }} />
+      </head>
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-accent selection:text-black`}>
-        <CartProvider>
-          {children}
-          <CartDrawer />
-        </CartProvider>
-        <ChatWidget />
-        <PushNotificationPrompt />
+        <ThemeProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+          <ChatWidget />
+          <PushNotificationPrompt />
+        </ThemeProvider>
 
         {/* JSON-LD Structured Data */}
         <script

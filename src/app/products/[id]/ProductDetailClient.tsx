@@ -35,14 +35,14 @@ export default function ProductDetailClient({
         <div className="container mx-auto px-4 md:px-8 py-8">
           <Link
             href="/#products"
-            className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Products
           </Link>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="relative aspect-square rounded-3xl overflow-hidden bg-neutral-900 border border-white/5">
+            <div className="relative aspect-square rounded-3xl overflow-hidden bg-card border border-subtle">
               <Image
                 src={product.image_url || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=1200&auto=format&fit=crop"}
                 alt={product.name}
@@ -61,20 +61,20 @@ export default function ProductDetailClient({
 
             <div className="flex flex-col justify-center space-y-6">
               <div className="space-y-2">
-                <div className="text-xs font-medium text-neutral-500 uppercase tracking-widest">
+                <div className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                   {product.category || "Accessory"}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                   {product.name}
                 </h1>
               </div>
 
-              <p className="text-lg text-neutral-300 leading-relaxed">
+              <p className="text-lg text-subtle leading-relaxed">
                 {product.description}
               </p>
 
               <div className="flex items-baseline gap-4">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-foreground">
                   KES {product.price.toLocaleString()}
                 </span>
                 {product.stock > 0 && product.stock < 5 && (
@@ -104,16 +104,20 @@ export default function ProductDetailClient({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 text-sm text-neutral-400">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-subtle">
+                <div className="flex items-center gap-3 text-sm text-muted">
                   <Zap className="h-5 w-5 text-accent" />
                   <span>Fast Delivery</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-neutral-400">
+                <div className="flex items-center gap-3 text-sm text-muted">
+                  <Zap className="h-5 w-5 text-accent" />
+                  <span>Fast Delivery</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted">
                   <Package className="h-5 w-5 text-accent" />
                   <span>Original Products</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-neutral-400">
+                <div className="flex items-center gap-3 text-sm text-muted">
                   <Shield className="h-5 w-5 text-accent" />
                   <span>Secure Checkout</span>
                 </div>
@@ -124,7 +128,7 @@ export default function ProductDetailClient({
           {relatedProducts.length > 0 && (
             <section className="mt-24">
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white">Related Products</h2>
+                <h2 className="text-2xl font-bold text-foreground">Related Products</h2>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {relatedProducts.map((p) => (

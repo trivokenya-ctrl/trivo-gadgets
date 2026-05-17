@@ -35,7 +35,7 @@ export default function AdminLogin() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh]">
       <div className="w-full max-w-md p-8 rounded-2xl bg-card border border-white/10 shadow-2xl">
-        <h1 className="text-2xl font-bold text-white mb-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-6 text-center">
           Admin Portal
         </h1>
         
@@ -47,23 +47,23 @@ export default function AdminLogin() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">Email</label>
+            <label className="block text-sm font-medium text-muted mb-1">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+              className="w-full bg-background border border-default rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-accent transition-colors"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">Password</label>
+            <label className="block text-sm font-medium text-muted mb-1">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-background border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+              className="w-full bg-background border border-default rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-accent transition-colors"
             />
           </div>
           <button

@@ -82,14 +82,14 @@ export default function AdminProductForm({ product }: { product?: Product }) {
       <div className="container mx-auto px-4 md:px-8 py-8 max-w-3xl">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Link>
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             {isEdit ? "Edit Product" : "Add Product"}
           </h1>
         </div>
@@ -101,8 +101,8 @@ export default function AdminProductForm({ product }: { product?: Product }) {
               <Sparkles className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">AI Product Assistant</h2>
-              <p className="text-sm text-neutral-400">
+              <h2 className="text-lg font-bold text-foreground">AI Product Assistant</h2>
+              <p className="text-sm text-muted">
                 Describe what you want to sell and AI will generate the title, description, and category.
               </p>
             </div>
@@ -112,7 +112,7 @@ export default function AdminProductForm({ product }: { product?: Product }) {
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder='e.g. "A premium wireless noise-cancelling headphone with 30hr battery, great for travel and office use"'
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder:text-neutral-600 focus:outline-none focus:border-accent/50 resize-none h-20"
+              className="flex-1 bg-surface border border-default rounded-xl px-4 py-3 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-accent/50 resize-none h-20"
             />
             <button
               onClick={handleGenerate}
@@ -131,61 +131,61 @@ export default function AdminProductForm({ product }: { product?: Product }) {
 
         {/* Product Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="rounded-2xl border border-white/10 bg-card p-6 space-y-6">
+          <div className="rounded-2xl border border-default bg-card p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Product Name</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Product Name</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-accent/50"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50"
                   placeholder="e.g. Sony WH-1000XM5 Wireless Headphones"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Description</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => handleChange("description", e.target.value)}
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-accent/50 resize-none"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50 resize-none"
                   placeholder="Describe the product, its features, and benefits..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Price (KES)</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Price (KES)</label>
                 <input
                   type="number"
                   value={form.price}
                   onChange={(e) => handleChange("price", e.target.value)}
                   required
                   min="0"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-accent/50"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50"
                   placeholder="e.g. 45000"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Stock</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Stock</label>
                 <input
                   type="number"
                   value={form.stock}
                   onChange={(e) => handleChange("stock", e.target.value)}
                   min="0"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-accent/50"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Category</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Category</label>
                 <select
                   value={form.category}
                   onChange={(e) => handleChange("category", e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent/50"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-accent/50"
                 >
                   <option value="">Select category</option>
                   {categories.map((cat) => (
@@ -195,12 +195,12 @@ export default function AdminProductForm({ product }: { product?: Product }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">Image URL</label>
+                <label className="block text-sm font-medium text-subtle mb-2">Image URL</label>
                 <input
                   type="url"
                   value={form.image_url}
                   onChange={(e) => handleChange("image_url", e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-neutral-600 focus:outline-none focus:border-accent/50"
+                  className="w-full bg-surface border border-default rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent/50"
                   placeholder="https://images.unsplash.com/..."
                 />
               </div>
@@ -211,9 +211,9 @@ export default function AdminProductForm({ product }: { product?: Product }) {
                 type="checkbox"
                 checked={form.is_featured}
                 onChange={(e) => handleChange("is_featured", e.target.checked)}
-                className="w-5 h-5 rounded border-white/10 bg-white/5 text-accent focus:ring-accent"
+                className="w-5 h-5 rounded border-default bg-surface text-accent focus:ring-accent"
               />
-              <span className="text-sm text-neutral-300">Feature this product on the homepage</span>
+              <span className="text-sm text-subtle">Feature this product on the homepage</span>
             </label>
           </div>
 

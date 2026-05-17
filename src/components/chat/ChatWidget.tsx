@@ -8,9 +8,26 @@ import { X, Send, Sparkles } from "lucide-react";
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = (useChat as any)({
+  const [input, setInput] = useState("");
+
+  const { messages, sendMessage, status } = (useChat as any)({
     api: "/api/chat",
   });
+
+  const isLoading = status === "submitted" || status === "streaming";
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input;
+    setInput("");
+    await sendMessage({ text: userMessage });
+  };
 
   useEffect(() => {
     if (!hasAutoOpened && !isOpen) {
@@ -25,21 +42,21 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pb-[env(safe-area-inset-bottom)]">
       {isOpen && (
-        <div className="mb-4 flex h-[500px] max-h-[70vh] w-[350px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-background shadow-2xl animate-in slide-in-from-bottom-10 zoom-in-95 duration-300">
-          <div className="flex items-center justify-between border-b border-white/10 bg-neutral-900/50 p-4 backdrop-blur-md">
+        <div className="mb-4 flex h-[500px] max-h-[70vh] w-[350px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-default bg-background shadow-2xl animate-in slide-in-from-bottom-10 zoom-in-95 duration-300">
+          <div className="flex items-center justify-between border-b border-default bg-card/50 p-4 backdrop-blur-md">
             <div>
-              <h3 className="font-bold text-white flex items-center gap-2">
+              <h3 className="font-bold text-foreground flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
                 Kylo
               </h3>
-              <p className="text-xs text-neutral-400">Trivo&apos;s AI assistant</p>
+              <p className="text-xs text-muted">Trivo&apos;s AI assistant</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-full p-1.5 text-neutral-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="rounded-full p-1.5 text-muted hover:bg-surface hover:text-foreground transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -47,7 +64,7 @@ export default function ChatWidget() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center text-center text-neutral-500 gap-2">
+              <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground gap-2">
                 <Sparkles className="h-8 w-8 opacity-20" />
                 <p className="text-sm">Hey! I&apos;m Kylo. Need help finding something?</p>
               </div>
@@ -61,7 +78,7 @@ export default function ChatWidget() {
                     className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
                       m.role === "user"
                         ? "bg-accent text-black font-medium rounded-br-sm"
-                        : "bg-neutral-800 text-neutral-200 border border-white/5 rounded-bl-sm"
+                        : "bg-chat-bubble text-foreground/90 border border-subtle rounded-bl-sm"
                     }`}
                   >
                     {m.content}
@@ -71,7 +88,7 @@ export default function ChatWidget() {
             )}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-neutral-800 text-neutral-200 border border-white/5 rounded-bl-sm flex items-center gap-1.5">
+                <div className="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-chat-bubble text-foreground/90 border border-subtle rounded-bl-sm flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 animate-bounce" style={{ animationDelay: "0ms" }}></span>
                   <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 animate-bounce" style={{ animationDelay: "150ms" }}></span>
                   <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 animate-bounce" style={{ animationDelay: "300ms" }}></span>
@@ -82,14 +99,14 @@ export default function ChatWidget() {
 
           <form
             onSubmit={handleSubmit}
-            className="border-t border-white/10 bg-neutral-900/50 p-4 backdrop-blur-md flex items-center gap-2"
+            className="border-t border-default bg-card/50 p-4 backdrop-blur-md flex items-center gap-2"
           >
             <input
               type="text"
               value={input}
               onChange={handleInputChange}
               placeholder="Ask Kylo anything..."
-              className="flex-1 bg-black/50 border border-white/10 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-accent transition-colors"
+              className="flex-1 bg-overlay-heavy border border-default rounded-full px-4 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
             />
             <button
               type="submit"

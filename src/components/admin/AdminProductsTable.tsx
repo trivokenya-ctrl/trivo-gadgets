@@ -48,8 +48,8 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm text-neutral-400">
-        <thead className="text-xs uppercase bg-white/5 border-b border-white/10 text-neutral-500">
+      <table className="w-full text-left text-sm text-muted">
+        <thead className="text-xs uppercase bg-surface border-b border-default text-muted-foreground">
           <tr>
             <th className="px-4 py-3">Product</th>
             <th className="px-4 py-3">Price (KES)</th>
@@ -60,19 +60,19 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
         </thead>
         <tbody>
           {products.map((product) => (
-            <tr key={product.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+            <tr key={product.id} className="border-b border-subtle hover:bg-surface/20 transition-colors">
               <td className="px-4 py-3 flex items-center gap-3">
-                <div className="relative h-10 w-10 rounded overflow-hidden bg-neutral-800 flex-shrink-0">
+                <div className="relative h-10 w-10 rounded overflow-hidden bg-chat-bubble flex-shrink-0">
                   {product.image_url && (
                     <Image src={product.image_url} alt={product.name} fill className="object-cover" />
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-white">{product.name}</div>
-                  <div className="text-xs text-neutral-500">{product.category}</div>
+                  <div className="font-medium text-foreground">{product.name}</div>
+                  <div className="text-xs text-muted-foreground">{product.category}</div>
                 </div>
               </td>
-              <td className="px-4 py-3 text-white">
+              <td className="px-4 py-3 text-foreground">
                 {product.price.toLocaleString()}
               </td>
               <td className="px-4 py-3">
@@ -82,26 +82,26 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
                     min="0"
                     value={product.stock}
                     onChange={(e) => handleStockChange(product.id, parseInt(e.target.value) || 0)}
-                    className={`w-16 bg-transparent border rounded px-2 py-1 text-center text-white focus:outline-none focus:border-accent ${product.stock < 3 ? "border-amber-500 text-amber-500" : "border-white/20"}`}
+                    className={`w-16 bg-transparent border rounded px-2 py-1 text-center text-foreground focus:outline-none focus:border-accent ${product.stock < 3 ? "border-amber-500 text-amber-500" : "border-default/80"}`}
                   />
                 </div>
               </td>
               <td className="px-4 py-3 text-center">
                 <button
                   onClick={() => handleToggleFeatured(product.id)}
-                  className={`p-1.5 rounded-md transition-colors ${product.is_featured ? "text-yellow-400 bg-yellow-400/10" : "text-neutral-600 hover:text-white"}`}
+                  className={`p-1.5 rounded-md transition-colors ${product.is_featured ? "text-yellow-400 bg-yellow-400/10" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <Star className="h-4 w-4" fill={product.is_featured ? "currentColor" : "none"} />
                 </button>
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
-                  <Link href={`/admin/products/${product.id}/edit`} className="p-1.5 text-neutral-400 hover:text-white transition-colors inline-block">
+                  <Link href={`/admin/products/${product.id}/edit`} className="p-1.5 text-muted hover:text-foreground transition-colors inline-block">
                     <Edit2 className="h-4 w-4" />
                   </Link>
                   <button 
                     onClick={() => handleDelete(product.id)}
-                    className="p-1.5 text-neutral-400 hover:text-red-400 transition-colors"
+                    className="p-1.5 text-muted hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -111,7 +111,7 @@ export default function AdminProductsTable({ initialProducts }: { initialProduct
           ))}
           {products.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
+              <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                 No products found. Add some inventory.
               </td>
             </tr>

@@ -57,18 +57,18 @@ export default function PushNotificationPrompt() {
   if (!supported || permission !== "unset" || dismissed) return null;
 
   return (
-    <div className="fixed bottom-24 right-6 z-40 max-w-xs bg-neutral-900 border border-white/10 rounded-xl p-4 shadow-xl animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div className="fixed bottom-24 right-6 z-40 max-w-xs bg-card border border-default rounded-xl p-4 shadow-xl animate-in slide-in-from-bottom-5 fade-in duration-300">
       <button
         onClick={() => setDismissed(true)}
-        className="absolute top-2 right-2 text-neutral-500 hover:text-white"
+        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
       >
         <X className="h-3.5 w-3.5" />
       </button>
       <div className="flex items-start gap-3">
         <Bell className="h-5 w-5 text-accent mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm text-white font-medium">Stay in the loop</p>
-          <p className="text-xs text-neutral-400 mt-1">Get notified about new drops and order updates.</p>
+          <p className="text-sm text-foreground font-medium">Stay in the loop</p>
+          <p className="text-xs text-muted mt-1">Get notified about new drops and order updates.</p>
           <button
             onClick={requestPermission}
             className="mt-2 text-xs bg-accent text-black font-semibold px-3 py-1.5 rounded-lg hover:bg-accent/90 transition-colors"

@@ -26,17 +26,17 @@ export default async function AccountPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-md px-4 md:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold tracking-tight text-white">
+        <Link href="/" className="text-xl font-bold tracking-tight text-foreground">
           TRIVO <span className="text-accent">KENYA</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
+          <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
             Back to Store
           </Link>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="text-sm font-medium text-neutral-400 hover:text-white flex items-center gap-2 transition-colors"
+              className="text-sm font-medium text-muted hover:text-foreground flex items-center gap-2 transition-colors"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
@@ -47,60 +47,60 @@ export default async function AccountPage() {
 
       <main className="container mx-auto px-4 md:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground mb-8 flex items-center gap-3">
             <User className="h-6 w-6 text-accent" />
             My Account
           </h1>
 
           <div className="grid gap-6 md:grid-cols-3 mb-8">
-            <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
+            <div className="bg-card/50 border border-default rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                   <User className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-neutral-400">Profile</p>
-                  <p className="text-white font-medium text-sm">{customer?.full_name || "Add name"}</p>
+                  <p className="text-sm text-muted">Profile</p>
+                  <p className="text-foreground font-medium text-sm">{customer?.full_name || "Add name"}</p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm text-neutral-400">
+              <div className="space-y-2 text-sm text-muted">
                 <p>{user.email}</p>
                 <p>{customer?.phone || "Add phone"}</p>
-                <p className="text-xs text-neutral-500">
+                <p className="text-xs text-muted-foreground">
                   Joined {customer?.created_at ? format(new Date(customer.created_at), "MMM yyyy") : "N/A"}
                 </p>
               </div>
             </div>
 
-            <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
+            <div className="bg-card/50 border border-default rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                   <Package className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-neutral-400">Orders</p>
-                  <p className="text-white font-medium text-2xl">{orders?.length || 0}</p>
+                  <p className="text-sm text-muted">Orders</p>
+                  <p className="text-foreground font-medium text-2xl">{orders?.length || 0}</p>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500">All orders placed via WhatsApp</p>
+              <p className="text-xs text-muted-foreground">All orders placed via WhatsApp</p>
             </div>
 
-            <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
+            <div className="bg-card/50 border border-default rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                   <Bell className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-neutral-400">Notifications</p>
-                  <p className="text-white font-medium text-sm">Push alerts</p>
+                  <p className="text-sm text-muted">Notifications</p>
+                  <p className="text-foreground font-medium text-sm">Push alerts</p>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500">Stay updated on drops &amp; orders</p>
+              <p className="text-xs text-muted-foreground">Stay updated on drops &amp; orders</p>
             </div>
           </div>
 
-          <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <div className="bg-card/50 border border-default rounded-xl p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-accent" />
               Order History
             </h2>
@@ -110,15 +110,15 @@ export default async function AccountPage() {
                 {orders.map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between bg-black/30 rounded-lg p-4 border border-white/5"
+                    className="flex items-center justify-between bg-overlay-heavy/50 rounded-lg p-4 border border-subtle"
                   >
                     <div className="flex items-center gap-3">
-                      <Clock className="h-4 w-4 text-neutral-500" />
+                      <Clock className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-white font-medium">
+                        <p className="text-sm text-foreground font-medium">
                           KES {order.total.toLocaleString()}
                         </p>
-                        <p className="text-xs text-neutral-500">
+                        <p className="text-xs text-muted-foreground">
                           {format(new Date(order.created_at), "MMM d, yyyy 'at' h:mm a")}
                         </p>
                       </div>
@@ -138,7 +138,7 @@ export default async function AccountPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-neutral-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <ShoppingBag className="h-10 w-10 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">No orders yet</p>
                 <Link
