@@ -9,10 +9,10 @@ export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Trivo Kenya | Premium Tech Gadgets",
-  description: "Get exclusive premium tech gadgets, smart home devices, and accessories in Kenya. Fast delivery nationwide. Shop the latest drops.",
+  description: "Get exclusive premium tech gadgets, smart home devices, and accessories in Kenya. Free delivery in Nairobi. Shop the latest drops.",
   openGraph: {
     title: "Trivo Kenya | Premium Tech Gadgets",
-    description: "Get exclusive premium tech gadgets, smart home devices, and accessories in Kenya. Fast delivery nationwide.",
+    description: "Get exclusive premium tech gadgets, smart home devices, and accessories in Kenya. Free delivery in Nairobi.",
     url: "https://trivokenya.store",
   },
 };

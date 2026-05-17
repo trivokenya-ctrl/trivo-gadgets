@@ -15,12 +15,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!product) return { title: "Product Not Found | Trivo Kenya" };
 
+  const seoTitle = product.seo_title || `${product.name} | Trivo Kenya`;
+  const seoDesc = product.seo_description || product.description || `Shop ${product.name} at Trivo Kenya. Premium tech gadgets in Kenya. Best price guaranteed.`;
+
   return {
-    title: `${product.name} | Trivo Kenya`,
-    description: product.description || `Shop ${product.name} at Trivo Kenya. Premium tech gadgets in Kenya. Best price guaranteed.`,
+    title: seoTitle,
+    description: seoDesc,
+    keywords: product.focus_keyword || undefined,
     openGraph: {
-      title: `${product.name} — Trivo Kenya`,
-      description: product.description || `Premium ${product.name} available in Kenya. Shop now.`,
+      title: product.seo_title || `${product.name} — Trivo Kenya`,
+      description: seoDesc,
       url: `https://trivokenya.store/products/${params.id}`,
       siteName: "Trivo Kenya",
       images: product.image_url ? [{ url: product.image_url, width: 1200, height: 1200 }] : [],
@@ -29,8 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${product.name} | Trivo Kenya`,
-      description: product.description || undefined,
+      title: product.seo_title || `${product.name} | Trivo Kenya`,
+      description: seoDesc,
       images: product.image_url ? [product.image_url] : [],
     },
     alternates: {

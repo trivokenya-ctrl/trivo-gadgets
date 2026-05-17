@@ -7,15 +7,15 @@ import { WHATSAPP_NUMBER } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Delivery Information | Trivo Kenya",
-  description: "Get your tech delivered in Nairobi within 1 to 2 days. Fast, secure upcountry shipping across Kenya in 2 to 3 days. Pay safely on delivery in Nairobi.",
+  description: "Free delivery in Nairobi within 1 to 2 days. Fast, secure upcountry shipping across Kenya in 2 to 3 days. Pay safely on delivery in Nairobi.",
 };
 
 const deliveryZones = [
   {
     name: "Nairobi & Surrounding Suburbs",
     timeline: "1 to 2 Days Delivery",
-    rate: "KES 300",
-    details: "Delivered straight to your doorstep or office within 1 to 2 days. Covers the entire Nairobi metropolitan area, including Westlands, Kilimani, Karen, Lang'ata, Thika Road, and surrounding suburbs.",
+    rate: "Free",
+    details: "Free delivery straight to your doorstep or office within 1 to 2 days. Covers the entire Nairobi metropolitan area, including Westlands, Kilimani, Karen, Lang'ata, Thika Road, and surrounding suburbs.",
     highlight: true,
   },
   {
@@ -75,7 +75,7 @@ export default function DeliveryPage() {
                 
                 <div className="flex items-baseline gap-2 mb-6 border-b border-subtle pb-4">
                   <span className="text-3xl font-extrabold text-foreground">{zone.rate}</span>
-                  <span className="text-xs text-muted-foreground">flat shipping fee</span>
+                  <span className="text-xs text-muted-foreground">{zone.rate === "Free" ? "free delivery in Nairobi" : "flat shipping fee"}</span>
                 </div>
 
                 <p className="text-sm text-subtle leading-relaxed">{zone.details}</p>

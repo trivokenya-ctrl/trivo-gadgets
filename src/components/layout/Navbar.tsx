@@ -14,22 +14,27 @@ export default function Navbar() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (searchOpen && searchRef.current) {
-      searchRef.current.focus();
+    if (searchOpen) {
+      searchRef.current?.focus();
     }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [searchOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/?search=${encodeURIComponent(searchQuery.trim())}`;
+      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
     }
     setSearchOpen(false);
     setSearchQuery("");
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-default bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full bg-background/70 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-4">
           <button
@@ -53,34 +58,34 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-subtle">
-          <Link href="/" className="hover:text-foreground transition-colors py-2">Store</Link>
+        <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-muted-foreground">
+          <Link href="/" className="hover:text-foreground transition-colors py-2">Store Home</Link>
           
-          {/* Categories Dropdown */}
           <div className="relative group py-2">
-            <button className="hover:text-foreground transition-colors flex items-center gap-1 focus:outline-none">
-              Categories
-              <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+            <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+              Categories <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card border border-subtle rounded-xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
-              <Link href="/categories/audio" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Audio</Link>
-              <Link href="/categories/car-accessories" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Car Accessories</Link>
-              <Link href="/categories/smart-home" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Smart Home</Link>
-              <Link href="/categories/cables" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Cables & Chargers</Link>
+            <div className="absolute top-full left-0 hidden group-hover:block w-48 pt-2">
+              <div className="bg-card border border-default rounded-xl p-2 shadow-xl space-y-1 backdrop-blur-md">
+                <Link href="/categories/audio" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Audio</Link>
+                <Link href="/categories/car-accessories" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Car Accessories</Link>
+                <Link href="/categories/smart-home" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Smart Home</Link>
+                <Link href="/categories/cables" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Cables & Chargers</Link>
+              </div>
             </div>
           </div>
 
-          {/* Support Dropdown */}
           <div className="relative group py-2">
-            <button className="hover:text-foreground transition-colors flex items-center gap-1 focus:outline-none">
-              Support
-              <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+            <button className="flex items-center gap-1 hover:text-foreground transition-colors">
+              Support <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
             </button>
-            <div className="absolute top-full left-0 hidden group-hover:block w-48 bg-card border border-subtle rounded-xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-1 duration-200 mt-1">
-              <Link href="/how-to-order" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">How to Order</Link>
-              <Link href="/delivery" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Delivery Info</Link>
-              <Link href="/returns" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">Returns & Warranty</Link>
-              <Link href="/faq" className="block px-3 py-2 rounded-lg text-sm hover:bg-surface hover:text-accent transition-colors">FAQs</Link>
+            <div className="absolute top-full left-0 hidden group-hover:block w-48 pt-2">
+              <div className="bg-card border border-default rounded-xl p-2 shadow-xl space-y-1 backdrop-blur-md">
+                <Link href="/how-to-order" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">How to Order</Link>
+                <Link href="/delivery" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Delivery Info</Link>
+                <Link href="/returns" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">Returns & Warranty</Link>
+                <Link href="/faq" className="block px-3 py-2 rounded-lg hover:bg-surface text-foreground transition-colors">FAQs & Help</Link>
+              </div>
             </div>
           </div>
 
@@ -88,25 +93,9 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-4 text-foreground">
-          {searchOpen ? (
-            <form onSubmit={handleSearch} className="flex items-center gap-2">
-              <input
-                ref={searchRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products..."
-                className="w-40 bg-surface border border-default rounded-lg px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
-              />
-              <button type="submit" className="text-accent hover:text-accent/80 transition-colors" aria-label="Search">
-                <Search className="h-5 w-5" />
-              </button>
-            </form>
-          ) : (
-            <button onClick={() => setSearchOpen(true)} className="hover:text-accent transition-colors" aria-label="Open search">
-              <Search className="h-5 w-5" />
-            </button>
-          )}
+          <button onClick={() => setSearchOpen(true)} className="hover:text-accent transition-colors" aria-label="Open search">
+            <Search className="h-5 w-5" />
+          </button>
           <Link href="/account" className="hover:text-accent transition-colors">
             <User className="h-5 w-5" />
           </Link>
@@ -154,6 +143,49 @@ export default function Navbar() {
             </div>
           </div>
         </nav>
+      )}
+
+      {/* iTey Store Style Search Modal Overlay */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200 flex flex-col items-center pt-24 px-4">
+          <div className="w-full max-w-2xl bg-card border border-subtle/20 rounded-2xl p-2 flex items-center shadow-2xl relative">
+            <Search className="h-6 w-6 text-muted-foreground ml-3 shrink-0" />
+            <form onSubmit={handleSearch} className="flex-1 flex items-center">
+              <input
+                ref={searchRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search premium gadgets..."
+                className="w-full bg-transparent px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none"
+                autoFocus
+              />
+              <button type="submit" className="text-xs font-bold bg-accent text-black px-4 py-2 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md mr-2">
+                Search
+              </button>
+            </form>
+            <button onClick={() => setSearchOpen(false)} className="p-2 text-muted-foreground hover:text-white transition-colors" aria-label="Close search">
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Results Box / Helper */}
+          <div className="w-full max-w-2xl bg-card/60 border border-subtle/10 rounded-2xl p-8 mt-4 text-center text-muted-foreground shadow-2xl backdrop-blur-md">
+            {searchQuery.trim() ? (
+              <p className="text-base font-medium text-foreground">
+                Press <kbd className="px-2 py-1 bg-surface rounded text-accent font-mono text-xs">Enter</kbd> to explore premium gadgets for &ldquo;{searchQuery}&rdquo;
+              </p>
+            ) : (
+              <p className="text-sm">
+                Type above to search our exclusive catalog of tech gadgets, smart home devices, and accessories.
+              </p>
+            )}
+          </div>
+
+          <p className="mt-6 text-xs text-muted-foreground font-medium tracking-wide">
+            Press <kbd className="px-1.5 py-0.5 bg-surface rounded">Esc</kbd> to close • <kbd className="px-1.5 py-0.5 bg-surface rounded">Enter</kbd> to browse results
+          </p>
+        </div>
       )}
     </header>
   );

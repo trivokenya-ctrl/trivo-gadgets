@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import CartDrawer from "@/components/cart/CartDrawer";
 import ChatWidget from "@/components/chat/ChatWidget";
 import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
@@ -13,7 +15,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const siteUrl = "https://trivokenya.store";
 const siteName = "Trivo Kenya";
-const siteDescription = "Premium tech gadgets, smart home devices, and accessories in Kenya. Shop the latest drops with fast delivery nationwide.";
+const siteDescription = "Premium tech gadgets, smart home devices, and accessories in Kenya. Shop the latest drops with free delivery in Nairobi.";
 
 export const viewport: Viewport = {
   themeColor: "#0a0a0a",
@@ -73,10 +75,14 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans bg-background text-foreground antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-accent selection:text-black`}>
         <ThemeProvider>
-          <CartProvider>
-            {children}
-            <CartDrawer />
-          </CartProvider>
+          <ToastProvider>
+            <WishlistProvider>
+              <CartProvider>
+                {children}
+                <CartDrawer />
+              </CartProvider>
+            </WishlistProvider>
+          </ToastProvider>
           <ChatWidget />
           <PushNotificationPrompt />
         </ThemeProvider>

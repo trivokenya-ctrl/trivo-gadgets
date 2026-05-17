@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: { category: string 
   const categoryName = getCategoryName(params.category);
   return {
     title: `${categoryName} | Genuine Gadgets | Trivo Kenya`,
-    description: `Shop original ${categoryName} at Trivo Kenya. Fast Nairobi delivery (1 to 2 days) and secure payment on delivery.`,
+    description: `Shop original ${categoryName} at Trivo Kenya. Free Nairobi delivery (1 to 2 days) and secure payment on delivery.`,
   };
 }
 
@@ -72,7 +72,7 @@ function getCategoryDetails(slug: string) {
       return {
         icon: Sparkles,
         title: getCategoryName(slug),
-        desc: `Explore our collection of genuine ${getCategoryName(slug)}. Hand-delivered in Nairobi within 1 to 2 days.`,
+        desc: `Explore our collection of genuine ${getCategoryName(slug)}. Free hand-delivery in Nairobi within 1 to 2 days.`,
         glowColor: "bg-accent/10",
       };
   }

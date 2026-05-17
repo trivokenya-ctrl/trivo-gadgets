@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
 import BackButton from "@/components/BackButton";
+import ShareButton from "@/components/ShareButton";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -25,7 +26,14 @@ export default function ProductDetailClient({
       <Navbar />
       <main className="min-h-screen bg-background">
         <div className="container mx-auto px-4 md:px-8 py-8">
-          <BackButton fallbackHref="/#products" />
+          <div className="flex items-center justify-between mb-8">
+            <BackButton fallbackHref="/#products" />
+            <ShareButton
+              title={product.name}
+              text={`Check out ${product.name} at Trivo Kenya — KES ${product.price.toLocaleString()}`}
+              url={`https://trivokenya.store/products/${product.id}`}
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="relative aspect-[4/5] md:aspect-square rounded-3xl overflow-hidden bg-card border border-subtle">
@@ -95,8 +103,8 @@ export default function ProductDetailClient({
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="p-3.5 rounded-xl bg-surface/50 border border-default space-y-1">
-                    <span className="font-bold text-foreground block">📍 Nairobi Delivery</span>
-                    <span className="text-muted-foreground block leading-relaxed">Delivered within 1 to 2 days. You get to open and check your item before paying via M-PESA.</span>
+                    <span className="font-bold text-foreground block">📍 Free Nairobi Delivery</span>
+                    <span className="text-muted-foreground block leading-relaxed">Free delivery within 1 to 2 days. You get to open and check your item before paying via M-PESA.</span>
                   </div>
                   
                   <div className="p-3.5 rounded-xl bg-surface/50 border border-default space-y-1">

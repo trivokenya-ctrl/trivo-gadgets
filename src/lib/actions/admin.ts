@@ -22,6 +22,9 @@ export async function createProduct(formData: FormData) {
   const category = formData.get("category") as string;
   const image_url = formData.get("image_url") as string;
   const is_featured = formData.get("is_featured") === "true";
+  const seo_title = formData.get("seo_title") as string;
+  const seo_description = formData.get("seo_description") as string;
+  const focus_keyword = formData.get("focus_keyword") as string;
 
   if (is_featured) {
     await supabase.from("products").update({ is_featured: false }).neq("id", "placeholder");
@@ -35,6 +38,9 @@ export async function createProduct(formData: FormData) {
     category: category || null,
     image_url: image_url || null,
     is_featured,
+    seo_title: seo_title || null,
+    seo_description: seo_description || null,
+    focus_keyword: focus_keyword || null,
   });
 
   if (error) throw new Error(error.message);
@@ -49,6 +55,9 @@ export async function updateProduct(id: string, formData: FormData) {
   const category = formData.get("category") as string;
   const image_url = formData.get("image_url") as string;
   const is_featured = formData.get("is_featured") === "true";
+  const seo_title = formData.get("seo_title") as string;
+  const seo_description = formData.get("seo_description") as string;
+  const focus_keyword = formData.get("focus_keyword") as string;
 
   if (is_featured) {
     await supabase.from("products").update({ is_featured: false }).neq("id", id);
@@ -64,6 +73,9 @@ export async function updateProduct(id: string, formData: FormData) {
       category: category || null,
       image_url: image_url || null,
       is_featured,
+      seo_title: seo_title || null,
+      seo_description: seo_description || null,
+      focus_keyword: focus_keyword || null,
     })
     .eq("id", id);
 

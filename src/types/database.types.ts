@@ -19,6 +19,9 @@ export type Database = {
           category: string | null
           image_url: string | null
           is_featured: boolean
+          seo_title: string | null
+          seo_description: string | null
+          focus_keyword: string | null
           created_at: string
         }
         Insert: {
@@ -30,6 +33,9 @@ export type Database = {
           category?: string | null
           image_url?: string | null
           is_featured?: boolean
+          seo_title?: string | null
+          seo_description?: string | null
+          focus_keyword?: string | null
           created_at?: string
         }
         Update: {
@@ -41,6 +47,9 @@ export type Database = {
           category?: string | null
           image_url?: string | null
           is_featured?: boolean
+          seo_title?: string | null
+          seo_description?: string | null
+          focus_keyword?: string | null
           created_at?: string
         }
         Relationships: []

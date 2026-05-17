@@ -25,7 +25,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-muted-foreground text-xs leading-relaxed max-w-xs">
-              Your reliable store for genuine tech gadgets in Kenya. Easy WhatsApp ordering, fast Nairobi delivery, and pay on delivery.
+              Your reliable store for genuine tech gadgets in Kenya. Easy WhatsApp ordering, free Nairobi delivery, and pay on delivery.
             </p>
             <div className="flex gap-4 pt-2">
               {socials.map((s) => {
@@ -100,7 +100,7 @@ export default function Footer() {
               <li className="text-[11px] text-muted-foreground/75 leading-relaxed pt-2">
                 <span>📍 Dispatch Hubs: Nairobi, Kenya</span>
                 <br />
-                <span>🚚 Timelines: 1-2 Days in Nairobi</span>
+                <span>🚚 Free Delivery in Nairobi</span>
               </li>
             </ul>
           </div>

@@ -23,7 +23,7 @@ const pillars = [
   {
     icon: Sparkles,
     title: "Fast Delivery & M-PESA on Delivery",
-    desc: "No long waits. If you're in Nairobi, our rider brings your order to your doorstep within 1 to 2 days. You can open the package and check your item before paying via M-PESA.",
+    desc: "No long waits and no delivery fee. If you're in Nairobi, our rider brings your order to your doorstep for free within 1 to 2 days. You can open the package and check your item before paying via M-PESA.",
   },
 ];
 

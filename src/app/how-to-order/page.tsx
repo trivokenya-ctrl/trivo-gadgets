@@ -24,12 +24,12 @@ const steps = [
   {
     icon: Truck,
     title: "3. Delivery Setup",
-    desc: "Let us know your location. If you're in Nairobi, we arrange hand delivery within 1 to 2 days. For upcountry orders, we ship securely via trusted couriers like Easy Coach, G4S, or Fargo Courier (takes about 2 to 3 days).",
+    desc: "Let us know your location. If you're in Nairobi, we arrange free hand delivery within 1 to 2 days. For upcountry orders, we ship securely via trusted couriers like Easy Coach, G4S, or Fargo Courier (takes about 2 to 3 days).",
   },
   {
     icon: CheckCircle2,
     title: "4. Check Your Item & Pay",
-    desc: "For Nairobi orders, you get to inspect your item upon delivery before paying via M-PESA Till or cash. Simple, safe, and absolutely no stress.",
+    desc: "For Nairobi orders, you get free delivery and can inspect your item upon delivery before paying via M-PESA Till or cash. Simple, safe, and absolutely no stress.",
   },
 ];
 

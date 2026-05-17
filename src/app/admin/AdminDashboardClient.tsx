@@ -4,7 +4,8 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import { Database } from "@/types/database.types";
 import { createProduct, updateProduct, deleteProduct } from "@/lib/actions/admin";
-import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2 } from "lucide-react";
+import { analyzeProductSEO, getGradeColor, getGradeBg } from "@/lib/seo";
+import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3 } from "lucide-react";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type Subscriber = { email: string; subscribed_at: string | null };
@@ -19,6 +20,9 @@ const emptyForm = {
   category: "",
   image_url: "",
   is_featured: false,
+  seo_title: "",
+  seo_description: "",
+  focus_keyword: "",
 };
 
 type Toast = { id: number; message: string; type: "success" | "error" };
@@ -38,6 +42,7 @@ export default function AdminDashboardClient({
   const [subscribers, setSubscribers] = useState(initialSubscribers);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"products" | "seo">("products");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
@@ -83,6 +88,9 @@ export default function AdminDashboardClient({
       category: product.category || "",
       image_url: product.image_url || "",
       is_featured: product.is_featured,
+      seo_title: product.seo_title || "",
+      seo_description: product.seo_description || "",
+      focus_keyword: product.focus_keyword || "",
     });
     setEditingId(product.id);
     setShowForm(true);
@@ -100,6 +108,9 @@ export default function AdminDashboardClient({
       fd.set("category", form.category);
       fd.set("image_url", form.image_url);
       fd.set("is_featured", form.is_featured ? "true" : "false");
+      fd.set("seo_title", form.seo_title);
+      fd.set("seo_description", form.seo_description);
+      fd.set("focus_keyword", form.focus_keyword);
 
       if (editingId) {
         await updateProduct(editingId, fd);
@@ -150,7 +161,30 @@ export default function AdminDashboardClient({
         <StatCard icon={AlertTriangle} label="Low Stock" value={stats.lowStock} warning valueRed />
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1 border-b border-default mb-6">
+        <button
+          onClick={() => setTab("products")}
+          className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-[1px] ${
+            tab === "products" ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          <Package className="h-4 w-4 inline mr-1.5" />
+          Products
+        </button>
+        <button
+          onClick={() => setTab("seo")}
+          className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-[1px] ${
+            tab === "seo" ? "border-accent text-foreground" : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          <BarChart3 className="h-4 w-4 inline mr-1.5" />
+          SEO Audit
+        </button>
+      </div>
+
       {/* Products Section */}
+      {tab === "products" && (
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground">Products</h2>
@@ -242,6 +276,46 @@ export default function AdminDashboardClient({
               </span>
             </label>
 
+            {/* SEO Section */}
+            <div className="border-t border-default pt-4 mt-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">SEO Settings</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="md:col-span-2 lg:col-span-3">
+                  <input
+                    type="text"
+                    placeholder="SEO Title (leave blank to use product name)"
+                    value={form.seo_title}
+                    onChange={(e) => setForm((f) => ({ ...f, seo_title: e.target.value }))}
+                    className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {form.seo_title.length || "(uses product name)"}/60 chars recommended
+                  </p>
+                </div>
+                <div className="md:col-span-2 lg:col-span-3">
+                  <textarea
+                    placeholder="SEO Meta Description (leave blank to use product description)"
+                    rows={2}
+                    value={form.seo_description}
+                    onChange={(e) => setForm((f) => ({ ...f, seo_description: e.target.value }))}
+                    className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none"
+                  />
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {form.seo_description.length || "(uses product description)"}/160 chars recommended
+                  </p>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Focus Keyword"
+                    value={form.focus_keyword}
+                    onChange={(e) => setForm((f) => ({ ...f, focus_keyword: e.target.value }))}
+                    className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -328,6 +402,62 @@ export default function AdminDashboardClient({
           </div>
         )}
       </section>
+      )}
+
+      {/* SEO Audit Section */}
+      {tab === "seo" && (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground">SEO Audit</h2>
+          <span className="text-xs text-muted-foreground">
+            {products.filter((p) => {
+              const score = analyzeProductSEO(p);
+              return score.percentage >= 70;
+            }).length}/{products.length} optimized
+          </span>
+        </div>
+        <div className="space-y-3">
+          {products.map((p) => {
+            const score = analyzeProductSEO(p);
+            const gradeColor = getGradeColor(score.grade);
+            const gradeBg = getGradeBg(score.grade);
+            return (
+              <div key={p.id} className={`rounded-xl border p-4 ${gradeBg}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`text-lg font-bold ${gradeColor}`}>{score.percentage}%</div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                      <p className="text-[11px] text-muted-foreground capitalize">{score.grade} — {score.total}/{score.max} pts</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { openEditForm(p); setTab("products"); }}
+                    className="shrink-0 rounded-lg border border-default px-3 py-1.5 text-xs text-muted hover:text-foreground transition-colors"
+                  >
+                    Edit SEO
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                  {score.checks.map((check, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <span className={`shrink-0 ${check.pass ? "text-green-500" : "text-red-500"}`}>
+                        {check.pass ? "✓" : "✗"}
+                      </span>
+                      <span className="text-muted-foreground truncate">{check.label}</span>
+                      <span className="ml-auto shrink-0 text-muted-foreground">{check.score}/{check.max}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {products.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-10">No products to audit.</p>
+          )}
+        </div>
+      </section>
+      )}
 
       {/* Subscribers Section */}
       <section>

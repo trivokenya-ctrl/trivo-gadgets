@@ -14,11 +14,11 @@ const faqs = [
   },
   {
     q: "How long does delivery take?",
-    a: "If you're in Nairobi or surrounding suburbs, we deliver within 1 to 2 days. For upcountry orders outside Nairobi, we ship via couriers like Fargo Courier, G4S, or Easy Coach, which takes about 2 to 3 days.",
+    a: "If you're in Nairobi or surrounding suburbs, we deliver for free within 1 to 2 days. For upcountry orders outside Nairobi, we ship via couriers like Fargo Courier, G4S, or Easy Coach, which takes about 2 to 3 days.",
   },
   {
     q: "Can I pay on delivery?",
-    a: "Yes, if you're in Nairobi, you can pay on delivery! You get to check your item first before paying via M-PESA Till Number or cash. For upcountry orders, we ask for payment before dispatch and share the courier tracking slip with you immediately.",
+    a: "Yes, if you're in Nairobi, you can pay on delivery with free delivery! You get to check your item first before paying via M-PESA Till Number or cash. For upcountry orders, we ask for payment before dispatch and share the courier tracking slip with you immediately.",
   },
   {
     q: "Are your products original?",
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Where is your shop located?",
-    a: "We operate as an online retail store with dispatch hubs across Nairobi. By not having expensive physical retail shops, we keep our costs low and pass those savings on to you, offering genuine gadgets at great prices with fast home delivery.",
+    a: "We operate as an online retail store with dispatch hubs across Nairobi. By not having expensive physical retail shops, we keep our costs low and pass those savings on to you, offering genuine gadgets at great prices with free home delivery in Nairobi.",
   },
 ];
 
