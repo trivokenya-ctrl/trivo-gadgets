@@ -14,8 +14,12 @@ export default function Footer() {
     <footer className="border-t border-default bg-background py-12">
       <div className="container mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex flex-col items-center md:items-start">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-foreground mb-2">
-            TRIVO <span className="text-accent">KENYA</span>
+          <Link href="/" className="flex items-center gap-3 text-foreground mb-2">
+            <svg width="24" height="22" viewBox="0 0 36 32" fill="none" className="flex-shrink-0">
+              <polygon points="18,3 3,29 33,29" stroke="#2563EB" strokeWidth="3.5" strokeLinejoin="round"/>
+              <polygon points="18,14 10,29 26,29" fill="#2563EB" fillOpacity="0.2"/>
+            </svg>
+            <span className="text-2xl font-bold tracking-tight">TRIVO KENYA</span>
           </Link>
           <p className="text-muted text-sm">
             Kenya&apos;s gadget store — chat, order, delivered.

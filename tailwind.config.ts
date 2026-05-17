@@ -11,7 +11,7 @@ const config: Config = {
       colors: {
         background: "var(--color-background)",
         foreground: "var(--color-foreground)",
-        accent: "#25D366",
+        accent: "#2563EB",
         highlight: "#3B82F6",
         card: {
           DEFAULT: "var(--color-card)",

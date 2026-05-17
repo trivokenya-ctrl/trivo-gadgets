@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         subject: "Welcome to Trivo Kenya 🔥",
         html: `
           <div style="font-family: sans-serif; background-color: #0a0a0a; color: #ffffff; padding: 40px 20px; text-align: center;">
-            <h1 style="color: #25D366; margin-bottom: 20px;">Welcome to Trivo Kenya</h1>
+            <h1 style="color: #2563EB; margin-bottom: 20px;">Welcome to Trivo Kenya</h1>
             <p style="font-size: 16px; color: #cccccc; line-height: 1.5; max-width: 500px; margin: 0 auto;">
               You're in. We'll hit you first when premium tech drops. Stay tuned.
             </p>
