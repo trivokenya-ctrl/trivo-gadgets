@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS public.products (
   category TEXT NOT NULL,
   image_url TEXT,
   is_featured BOOLEAN DEFAULT false,
-  vendor_id UUID REFERENCES public.vendors(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -90,6 +89,19 @@ CREATE TABLE IF NOT EXISTS public.vendors (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Add vendor_id to products if missing (separate from CREATE TABLE for idempotency)
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS vendor_id UUID;
+
+-- Add FK constraint if it doesn't exist (safe to re-run)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'products_vendor_id_fkey'
+  ) THEN
+    ALTER TABLE public.products ADD CONSTRAINT products_vendor_id_fkey
+      FOREIGN KEY (vendor_id) REFERENCES public.vendors(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
 -- Admin Orders Table (receipt-based orders managed by admin)
 CREATE TABLE IF NOT EXISTS public.admin_orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -102,11 +114,38 @@ CREATE TABLE IF NOT EXISTS public.admin_orders (
   delivery_fee INTEGER DEFAULT 0,
   total INTEGER NOT NULL,
   mpesa_reference TEXT NOT NULL,
-  vendor_id UUID REFERENCES public.vendors(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'dispatched', 'delivered', 'refunded')),
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Add columns to admin_orders if missing (for existing tables from older schema)
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS customer_email TEXT;
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS subtotal INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS delivery_fee INTEGER DEFAULT 0;
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS mpesa_reference TEXT NOT NULL DEFAULT '';
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS vendor_id UUID;
+ALTER TABLE public.admin_orders ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'confirmed';
+
+-- Safely add FK constraint for admin_orders.vendor_id
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'admin_orders_vendor_id_fkey'
+  ) THEN
+    ALTER TABLE public.admin_orders ADD CONSTRAINT admin_orders_vendor_id_fkey
+      FOREIGN KEY (vendor_id) REFERENCES public.vendors(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
+-- Safely add check constraint for admin_orders.status
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'admin_orders_status_check'
+  ) THEN
+    ALTER TABLE public.admin_orders ADD CONSTRAINT admin_orders_status_check
+      CHECK (status IN ('confirmed', 'dispatched', 'delivered', 'refunded'));
+  END IF;
+END $$;
 
 -- ------------------------------------------------------------------------------
 -- 3. AUTOMATION TRIGGERS (Automates profile generation)
@@ -217,6 +256,14 @@ CREATE POLICY "Allow vendor read own" ON public.vendors
   FOR SELECT TO authenticated
   USING (email = auth.email());
 
+-- Admin Users Table (for access control)
+CREATE TABLE IF NOT EXISTS public.admin_users (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Admin Orders Policies
 DROP POLICY IF EXISTS "Allow public read admin_orders by receipt" ON public.admin_orders;
 CREATE POLICY "Allow public read admin_orders by receipt" ON public.admin_orders
@@ -226,6 +273,20 @@ DROP POLICY IF EXISTS "Allow vendor read own admin_orders" ON public.admin_order
 CREATE POLICY "Allow vendor read own admin_orders" ON public.admin_orders
   FOR SELECT TO authenticated
   USING (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()));
+
+-- Add SEO columns to products if they don't exist
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS seo_title TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS seo_description TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS focus_keyword TEXT;
+
+-- Enable RLS on admin_users
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+
+-- Admin Users Policies
+DROP POLICY IF EXISTS "Allow admin users to select own" ON public.admin_users;
+CREATE POLICY "Allow admin users to select own" ON public.admin_users
+  FOR SELECT TO authenticated
+  USING (email = auth.email());
 
 -- ------------------------------------------------------------------------------
 -- 6. SEED DATA (Clean, conflict-safe upserts)

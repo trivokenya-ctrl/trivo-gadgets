@@ -11,13 +11,6 @@ const suggestions = [
   "What audio products are available?",
 ];
 
-interface ChatHelpers {
-  messages: Array<{ id: string; role: string; content: string; parts?: Array<{ type: string; text?: string }> }>;
-  sendMessage: (message: { text: string }) => Promise<void>;
-  status: string;
-  error: Error | undefined;
-}
-
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAutoOpened, setHasAutoOpened] = useState(false);
@@ -25,15 +18,9 @@ export default function ChatWidget() {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chat = useChat() as unknown as ChatHelpers;
-  const { messages, sendMessage, status, error } = chat;
+  const { messages, sendMessage, status, error } = useChat();
 
   const isLoading = status === "submitted" || status === "streaming";
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +61,13 @@ export default function ChatWidget() {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  const getMessageContent = (m: { parts?: Array<{ type: string; text?: string }>; content?: string }) => {
+    if (Array.isArray(m.parts)) {
+      return m.parts.map((p) => p.type === "text" ? p.text : "").join("");
+    }
+    return m.content || "";
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pb-[env(safe-area-inset-bottom)]">
@@ -141,7 +135,7 @@ export default function ChatWidget() {
                         : "bg-chat-bubble text-foreground border border-subtle rounded-bl-sm"
                     }`}
                   >
-                    {(Array.isArray(m.parts) ? m.parts.map((p: { type: string; text?: string }) => p.type === "text" ? p.text : "").join("") : m.content) || ""}
+                    {getMessageContent(m)}
                   </div>
                 </div>
               ))
@@ -192,7 +186,7 @@ export default function ChatWidget() {
               ref={inputRef}
               type="text"
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Kylo anything..."
               className="flex-1 bg-background border border-default rounded-full px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors"
             />

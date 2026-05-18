@@ -40,6 +40,7 @@ export default async function VendorLayout({
           </span>
         </div>
         <form action="/auth/signout" method="post">
+          <input type="hidden" name="redirect" value="/vendor" />
           <button
             type="submit"
             className="flex items-center gap-2 text-sm font-medium text-muted hover:text-foreground transition-colors"

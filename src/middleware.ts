@@ -38,11 +38,32 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
+
+    // Check admin_users table for role verification
+    const { data: adminUser } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("email", user.email)
+      .single();
+
+    if (!adminUser) {
+      await supabase.auth.signOut();
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
   }
 
   // Redirect /admin/login to /admin if already logged in
   if (request.nextUrl.pathname === "/admin/login" && user) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    // Check if user is actually an admin
+    const { data: adminUser } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("email", user.email)
+      .single();
+
+    if (adminUser) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
   }
 
   // Protect all /vendor routes except /vendor itself (login page)

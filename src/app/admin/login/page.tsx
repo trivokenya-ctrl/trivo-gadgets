@@ -1,32 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Script from "next/script";
+
+interface CaptchaWindow {
+  onAdminCaptchaSuccess?: (token: string) => void;
+  onAdminCaptchaExpired?: () => void;
+  onAdminCaptchaError?: () => void;
+  hcaptcha?: {
+    reset: () => void;
+  };
+}
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    const w = window as unknown as CaptchaWindow;
+    w.onAdminCaptchaSuccess = (token: string) => {
+      setCaptchaToken(token);
+    };
+    w.onAdminCaptchaExpired = () => {
+      setCaptchaToken("");
+    };
+    w.onAdminCaptchaError = () => {
+      setCaptchaToken("");
+    };
+
+    return () => {
+      delete w.onAdminCaptchaSuccess;
+      delete w.onAdminCaptchaExpired;
+      delete w.onAdminCaptchaError;
+    };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Please complete the captcha challenge.");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    setLoading(false);
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    });
 
-    if (authError) {
-      setError("Wrong email or password");
-    } else {
-      router.push("/admin");
-      router.refresh();
+    // Reset captcha
+    const w = window as unknown as CaptchaWindow;
+    if (w.hcaptcha) {
+      w.hcaptcha.reset();
     }
+    setCaptchaToken("");
+
+    if (authError || !authData.user) {
+      setError("Wrong email or password");
+      setLoading(false);
+      return;
+    }
+
+    // Check if user exists in admin_users table
+    const { data: adminUser } = await supabase
+      .from("admin_users")
+      .select("id, role")
+      .eq("email", email)
+      .single();
+
+    if (!adminUser) {
+      await supabase.auth.signOut();
+      setError("Not authorised as an admin");
+      setLoading(false);
+      return;
+    }
+
+    router.push("/admin");
+    router.refresh();
   };
 
   return (
@@ -64,9 +126,20 @@ export default function AdminLogin() {
             />
           </div>
 
+          <div className="flex justify-center my-4">
+            <div
+              className="h-captcha"
+              data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
+              data-callback="onAdminCaptchaSuccess"
+              data-expired-callback="onAdminCaptchaExpired"
+              data-error-callback="onAdminCaptchaError"
+              data-theme="dark"
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !captchaToken}
             className="w-full rounded-lg bg-white py-2.5 text-sm font-bold text-black hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center"
           >
             {loading ? (
@@ -77,6 +150,7 @@ export default function AdminLogin() {
           </button>
         </form>
       </div>
+      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
     </div>
   );
 }
