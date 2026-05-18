@@ -284,6 +284,9 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS seo_title TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS seo_description TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS focus_keyword TEXT;
 
+-- CJ Dropshipping integration
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cj_product_id TEXT;
+
 -- Enable RLS on admin_users
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 

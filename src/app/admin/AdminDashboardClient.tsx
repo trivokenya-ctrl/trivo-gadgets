@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Database } from "@/types/database.types";
 import { createProduct, updateProduct, deleteProduct, createOrder, updateOrderStatus, deleteOrder, createVendor, updateVendor, deleteVendor } from "@/lib/actions/admin";
 import { analyzeProductSEO, getGradeColor, getGradeBg } from "@/lib/seo";
-import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3, DollarSign, ShoppingCart, Truck, Send, Eye, ExternalLink } from "lucide-react";
+import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3, DollarSign, ShoppingCart, Truck, Send, Eye, ExternalLink, Download, Loader2, ChevronLeft } from "lucide-react";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type AdminOrder = Database["public"]["Tables"]["admin_orders"]["Row"];
@@ -59,7 +59,7 @@ export default function AdminDashboardClient({
   const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<"products" | "seo" | "transactions" | "vendors">("products");
+  const [tab, setTab] = useState<"products" | "seo" | "transactions" | "vendors" | "import">("products");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | AdminOrder | Vendor | null>(null);
@@ -70,6 +70,36 @@ export default function AdminDashboardClient({
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [editingVendorId, setEditingVendorId] = useState<string | null>(null);
+
+  // CJ Import state
+  const [cjInput, setCjInput] = useState("");
+  const [cjFetching, setCjFetching] = useState(false);
+  const [cjProduct, setCjProduct] = useState<CJProduct | null>(null);
+  const [cjError, setCjError] = useState("");
+  const [cjImportForm, setCjImportForm] = useState({
+    name: "",
+    description: "",
+    sellPrice: "",
+    mainImage: "",
+    selectedImages: [] as string[],
+    category: "",
+    is_featured: false,
+    stock: "0",
+  });
+  const [cjImportSuccess, setCjImportSuccess] = useState<{ id: string; name: string } | null>(null);
+  const [cjImporting, setCjImporting] = useState(false);
+
+  interface CJProduct {
+    pid: string;
+    productName: string;
+    description: string;
+    sellPrice: number;
+    weight: number;
+    productImage: string;
+    productImageSet: string[];
+    categoryName: string;
+    variants: { variantName: string; variantSellPrice: number; variantImage: string }[];
+  }
 
   // New Transaction form state
   const [txForm, setTxForm] = useState({
@@ -392,6 +422,7 @@ export default function AdminDashboardClient({
           { id: "seo" as const, label: "SEO Audit", icon: BarChart3 },
           { id: "transactions" as const, label: "Transactions", icon: ShoppingCart },
           { id: "vendors" as const, label: "Vendors", icon: Users },
+          { id: "import" as const, label: "Import", icon: Download },
         ].map((t) => (
           <button
             key={t.id}
@@ -498,7 +529,16 @@ export default function AdminDashboardClient({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-medium text-foreground">{p.name}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">
+                    <span className="flex items-center gap-2">
+                      {p.name}
+                      {p.cj_product_id && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-400">
+                          <Download className="h-2.5 w-2.5" /> CJ
+                        </span>
+                      )}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{p.category || "—"}</td>
                   <td className="px-4 py-3 text-foreground whitespace-nowrap">KES {p.price.toLocaleString()}</td>
                   <td className={`px-4 py-3 whitespace-nowrap ${p.stock < 3 ? "text-red-500 font-semibold" : "text-foreground"}`}>{p.stock}</td>
@@ -770,6 +810,313 @@ export default function AdminDashboardClient({
             </table>
           </div>
         </div>
+      </section>
+      )}
+
+      {/* ============ IMPORT TAB ============ */}
+      {tab === "import" && (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground">Import from CJ Dropshipping</h2>
+          {cjProduct && (
+            <button
+              onClick={() => { setCjProduct(null); setCjError(""); setCjInput(""); setCjImportSuccess(null); }}
+              className="flex items-center gap-2 rounded-lg border border-default px-4 py-2 text-xs font-medium text-muted hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" /> Back
+            </button>
+          )}
+        </div>
+
+        {cjImportSuccess ? (
+          <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-6 text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20">
+              <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-green-500">Product added!</p>
+              <p className="text-sm text-muted-foreground mt-1">It's now live on the store.</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={`/products/${cjImportSuccess.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-xs font-bold text-black hover:bg-neutral-200 transition-colors"
+              >
+                <Eye className="h-3.5 w-3.5" /> View on store
+              </a>
+              <button
+                onClick={() => { setCjProduct(null); setCjError(""); setCjInput(""); setCjImportSuccess(null); }}
+                className="inline-flex items-center gap-2 rounded-lg border border-default px-4 py-2.5 text-xs font-medium text-foreground hover:bg-surface transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" /> Import another product
+              </button>
+            </div>
+          </div>
+        ) : !cjProduct ? (
+          /* STEP 1 — Paste CJ Link */
+          <div className="rounded-xl border border-default bg-card p-6 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Paste a CJ Dropshipping product URL or product ID to fetch its details.
+            </p>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                placeholder="Paste CJ product URL or product ID"
+                value={cjInput}
+                onChange={(e) => { setCjInput(e.target.value); setCjError(""); }}
+                className="flex-1 bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+              />
+              <button
+                onClick={async () => {
+                  const { extractProductId } = await import("@/lib/cj-utils");
+                  const pid = extractProductId(cjInput);
+                  if (!pid) { setCjError("Invalid CJ URL or product ID"); return; }
+                  setCjFetching(true);
+                  setCjError("");
+                  try {
+                    const res = await fetch(`/api/cj/product?pid=${encodeURIComponent(pid)}`);
+                    const data = await res.json();
+                    if (!res.ok) { setCjError(data.error || "Product not found. Check the URL and try again."); return; }
+                    setCjProduct(data);
+                    setCjImportForm({
+                      name: data.productName,
+                      description: data.description,
+                      sellPrice: data.sellPrice.toString(),
+                      mainImage: data.productImage,
+                      selectedImages: data.productImageSet,
+                      category: ["Audio","Car Accessories","Smart Home","Cables","Lighting"].includes(data.categoryName) ? data.categoryName : "Other",
+                      is_featured: false,
+                      stock: "0",
+                    });
+                  } catch {
+                    setCjError("Failed to fetch product. Check the URL and try again.");
+                  }
+                  setCjFetching(false);
+                }}
+                disabled={cjFetching || !cjInput.trim()}
+                className="rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-black hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {cjFetching ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Fetching from CJ...</>
+                ) : (
+                  "Fetch Product"
+                )}
+              </button>
+            </div>
+            {cjError && <p className="text-xs text-red-400">{cjError}</p>}
+          </div>
+        ) : (
+          /* STEP 2 — Preview + Edit */
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* LEFT COLUMN — Product preview from CJ */}
+            <div className="rounded-xl border border-default bg-card p-5 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CJ Product Preview</h3>
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-surface">
+                {cjImportForm.mainImage ? (
+                  <Image src={cjImportForm.mainImage} alt={cjImportForm.name} fill className="object-cover" sizes="400px" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-foreground text-sm">No image</div>
+                )}
+              </div>
+              {cjImportForm.selectedImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto">
+                  {cjImportForm.selectedImages.slice(0, 5).map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCjImportForm((f) => ({ ...f, mainImage: img }))}
+                      className={`relative h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${
+                        cjImportForm.mainImage === img ? "border-blue-500" : "border-transparent hover:border-default"
+                      }`}
+                    >
+                      <Image src={img} alt={`Thumbnail ${i + 1}`} fill className="object-cover" sizes="64px" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div>
+                <input
+                  type="text"
+                  value={cjImportForm.name}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, name: e.target.value }))}
+                  className="w-full bg-background border border-default rounded-lg px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:border-accent"
+                />
+              </div>
+              <div className="text-sm space-y-1">
+                <p className="text-muted-foreground">
+                  CJ Price: <span className="text-foreground font-medium">${cjProduct.sellPrice.toFixed(2)} USD</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  (≈ KES {Math.round(cjProduct.sellPrice * 130).toLocaleString()} at current rate)
+                </p>
+                <p className="text-muted-foreground">
+                  Weight: <span className="text-foreground font-medium">{cjProduct.weight}g</span>
+                </p>
+              </div>
+              <div>
+                <textarea
+                  value={cjImportForm.description}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={5}
+                  className="w-full bg-background border border-default rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none"
+                />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN — Store settings */}
+            <div className="rounded-xl border border-default bg-card p-5 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Your Store Settings</h3>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Product Name</label>
+                <input
+                  type="text"
+                  value={cjImportForm.name}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, name: e.target.value }))}
+                  className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Description</label>
+                <textarea
+                  value={cjImportForm.description}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, description: e.target.value }))}
+                  rows={4}
+                  className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">
+                  Your KES Selling Price <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 4500"
+                    value={cjImportForm.sellPrice}
+                    onChange={(e) => setCjImportForm((f) => ({ ...f, sellPrice: e.target.value }))}
+                    className="w-full bg-background border border-default rounded-lg px-4 py-2.5 pr-12 text-sm text-foreground focus:outline-none focus:border-accent"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium">KSh</span>
+                </div>
+                {cjImportForm.sellPrice && parseFloat(cjImportForm.sellPrice) > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-[11px] text-muted-foreground">
+                      Supplier cost ≈ KES {Math.round(cjProduct.sellPrice * 130).toLocaleString()} + cargo ≈ KES 400 = landed cost ≈ KES {(Math.round(cjProduct.sellPrice * 130) + 400).toLocaleString()}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Your margin at this price: KES {(parseFloat(cjImportForm.sellPrice) - (Math.round(cjProduct.sellPrice * 130) + 400)).toLocaleString()} ({((parseFloat(cjImportForm.sellPrice) - (Math.round(cjProduct.sellPrice * 130) + 400)) / parseFloat(cjImportForm.sellPrice) * 100).toFixed(0)}%)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Category</label>
+                <select
+                  value={cjImportForm.category}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, category: e.target.value }))}
+                  className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
+                >
+                  <option value="">Select category</option>
+                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-2">Main Image</label>
+                <div className="flex gap-2 overflow-x-auto">
+                  {cjImportForm.selectedImages.slice(0, 5).map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCjImportForm((f) => ({ ...f, mainImage: img }))}
+                      className={`relative h-16 w-16 shrink-0 rounded-lg overflow-hidden border-2 transition-colors ${
+                        cjImportForm.mainImage === img ? "border-blue-500" : "border-transparent hover:border-default"
+                      }`}
+                    >
+                      <Image src={img} alt={`Option ${i + 1}`} fill className="object-cover" sizes="64px" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="cj-featured"
+                  checked={cjImportForm.is_featured}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, is_featured: e.target.checked }))}
+                  className="h-4 w-4 rounded border-default bg-surface text-accent focus:ring-accent"
+                />
+                <label htmlFor="cj-featured" className="text-xs text-muted cursor-pointer">Set as Featured Product</label>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Stock Quantity</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={cjImportForm.stock}
+                  onChange={(e) => setCjImportForm((f) => ({ ...f, stock: e.target.value }))}
+                  className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">Set to 0 if you haven't received stock yet. Update after your first shipment arrives.</p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={async () => {
+                    if (!cjImportForm.sellPrice || parseFloat(cjImportForm.sellPrice) <= 0) {
+                      setCjError("Please enter a selling price");
+                      return;
+                    }
+                    setCjImporting(true);
+                    setCjError("");
+                    try {
+                      const fd = new FormData();
+                      fd.set("name", cjImportForm.name);
+                      fd.set("description", cjImportForm.description);
+                      fd.set("price", cjImportForm.sellPrice);
+                      fd.set("stock", cjImportForm.stock);
+                      fd.set("category", cjImportForm.category);
+                      fd.set("image_url", cjImportForm.mainImage);
+                      fd.set("is_featured", cjImportForm.is_featured ? "true" : "false");
+                      fd.set("seo_title", cjImportForm.name);
+                      fd.set("seo_description", cjImportForm.description.slice(0, 160));
+                      fd.set("focus_keyword", "");
+                      fd.set("cj_product_id", cjProduct.pid);
+                      await createProduct(fd);
+                      await refresh();
+                      const newProduct = products.find((p) => p.cj_product_id === cjProduct.pid);
+                      setCjImportSuccess({ id: newProduct?.id || "", name: cjImportForm.name });
+                      addToast("Product added! It's now live on the store.", "success");
+                    } catch (err: unknown) {
+                      const message = err instanceof Error ? err.message : "Failed to add product";
+                      setCjError(message);
+                    }
+                    setCjImporting(false);
+                  }}
+                  disabled={cjImporting}
+                  className="flex-1 rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-black hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {cjImporting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  Add to Store
+                </button>
+                <button
+                  onClick={() => { setCjProduct(null); setCjError(""); setCjInput(""); }}
+                  className="text-xs text-muted hover:text-foreground underline"
+                >
+                  Cancel
+                </button>
+              </div>
+              {cjError && <p className="text-xs text-red-400">{cjError}</p>}
+            </div>
+          </div>
+        )}
       </section>
       )}
 

@@ -25,6 +25,7 @@ export async function createProduct(formData: FormData) {
   const seo_title = formData.get("seo_title") as string;
   const seo_description = formData.get("seo_description") as string;
   const focus_keyword = formData.get("focus_keyword") as string;
+  const cj_product_id = formData.get("cj_product_id") as string;
 
   if (is_featured) {
     await supabase.from("products").update({ is_featured: false }).neq("id", "placeholder");
@@ -41,6 +42,7 @@ export async function createProduct(formData: FormData) {
     seo_title: seo_title || null,
     seo_description: seo_description || null,
     focus_keyword: focus_keyword || null,
+    cj_product_id: cj_product_id || null,
   });
 
   if (error) throw new Error(error.message);

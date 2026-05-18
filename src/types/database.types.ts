@@ -23,6 +23,7 @@ export type Database = {
           seo_description: string | null
           focus_keyword: string | null
           vendor_id: string | null
+          cj_product_id: string | null
           created_at: string
         }
         Insert: {
@@ -38,6 +39,7 @@ export type Database = {
           seo_description?: string | null
           focus_keyword?: string | null
           vendor_id?: string | null
+          cj_product_id?: string | null
           created_at?: string
         }
         Update: {
@@ -53,6 +55,7 @@ export type Database = {
           seo_description?: string | null
           focus_keyword?: string | null
           vendor_id?: string | null
+          cj_product_id?: string | null
           created_at?: string
         }
         Relationships: [

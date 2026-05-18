@@ -24,6 +24,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 RESEND_API_KEY=your_resend_api_key
 NEXT_PUBLIC_WHATSAPP_NUMBER=254757512769
+
+# CJ Dropshipping (optional — for product import feature):
+CJ_API_KEY=your_cj_dropshipping_email
+CJ_API_SECRET=your_cj_dropshipping_password
 ```
 
 ### 3. Setup Supabase

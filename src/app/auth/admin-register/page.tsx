@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import { Mail, Lock, User, Phone, Eye, EyeOff, CheckCircle, Shield, ShieldCheck } from "lucide-react";
@@ -23,8 +21,6 @@ export default function AdminRegisterPage() {
   const [captchaReady, setCaptchaReady] = useState(false);
   const captchaRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     const checkCaptcha = setInterval(() => {
@@ -58,48 +54,28 @@ export default function AdminRegisterPage() {
     }
 
     setLoading(true);
+    setCaptchaToken("");
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName, phone, role },
-          captchaToken,
-        },
+      const res = await fetch("/api/auth/admin-register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, fullName, phone, role }),
       });
 
-      setCaptchaToken("");
+      const data = await res.json();
 
-      if (authError) {
-        setError(authError.message);
+      if (!res.ok) {
+        setError(data.error || "Registration failed.");
         setLoading(false);
         return;
       }
 
-      // Insert into admin_users table
-      const { error: adminError } = await supabase.from("admin_users").insert({
-        email,
-        role,
-      });
-
-      if (adminError) {
-        setError(adminError.message);
-        setLoading(false);
-        return;
-      }
-
-      if (authData.session && authData.user) {
-        router.push("/account");
-        router.refresh();
-      } else {
-        setConfirmed(true);
-        setLoading(false);
-      }
+      setConfirmed(true);
+      setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
-      setCaptchaToken("");
     }
   };
 

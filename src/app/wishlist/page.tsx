@@ -81,6 +81,7 @@ export default function WishlistPage() {
                             seo_title: null,
                             seo_description: null,
                             focus_keyword: null,
+                            cj_product_id: null,
                           };
                           addToCart(partial as Product);
                           removeItem(item.id);
