@@ -22,6 +22,7 @@ export type Database = {
           seo_title: string | null
           seo_description: string | null
           focus_keyword: string | null
+          vendor_id: string | null
           created_at: string
         }
         Insert: {
@@ -36,6 +37,7 @@ export type Database = {
           seo_title?: string | null
           seo_description?: string | null
           focus_keyword?: string | null
+          vendor_id?: string | null
           created_at?: string
         }
         Update: {
@@ -50,9 +52,17 @@ export type Database = {
           seo_title?: string | null
           seo_description?: string | null
           focus_keyword?: string | null
+          vendor_id?: string | null
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       subscribers: {
         Row: {
@@ -149,6 +159,34 @@ export type Database = {
           }
         ]
       }
+      notification_subscriptions: {
+        Row: {
+          id: string
+          customer_id: string
+          subscription: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          customer_id: string
+          subscription: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          customer_id?: string
+          subscription?: Json
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_subscriptions_customer_id_fkey"
+            columns: ["customer_id"]
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       reviews: {
         Row: {
           id: string
@@ -183,30 +221,90 @@ export type Database = {
           }
         ]
       }
-      notification_subscriptions: {
+      vendors: {
         Row: {
           id: string
-          customer_id: string
-          subscription: Json
+          name: string
+          email: string
+          phone: string | null
+          business_name: string | null
+          status: string
           created_at: string
         }
         Insert: {
           id?: string
-          customer_id: string
-          subscription: Json
+          name: string
+          email: string
+          phone?: string | null
+          business_name?: string | null
+          status?: string
           created_at?: string
         }
         Update: {
           id?: string
-          customer_id?: string
-          subscription?: Json
+          name?: string
+          email?: string
+          phone?: string | null
+          business_name?: string | null
+          status?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      admin_orders: {
+        Row: {
+          id: string
+          receipt_number: string
+          customer_name: string
+          customer_phone: string
+          customer_email: string | null
+          items: Json
+          subtotal: number
+          delivery_fee: number
+          total: number
+          mpesa_reference: string
+          vendor_id: string | null
+          status: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          receipt_number: string
+          customer_name: string
+          customer_phone: string
+          customer_email?: string | null
+          items: Json
+          subtotal: number
+          delivery_fee?: number
+          total: number
+          mpesa_reference: string
+          vendor_id?: string | null
+          status?: string
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          receipt_number?: string
+          customer_name?: string
+          customer_phone?: string
+          customer_email?: string | null
+          items?: Json
+          subtotal?: number
+          delivery_fee?: number
+          total?: number
+          mpesa_reference?: string
+          vendor_id?: string | null
+          status?: string
+          notes?: string | null
           created_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notification_subscriptions_customer_id_fkey"
-            columns: ["customer_id"]
-            referencedRelation: "customers"
+            foreignKeyName: "admin_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           }
         ]

@@ -1,0 +1,100 @@
+"use server";
+
+import { createServerClient } from "@supabase/ssr";
+import { Database } from "@/types/database.types";
+
+type Product = Database["public"]["Tables"]["products"]["Row"];
+
+function getAdminClient() {
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { cookies: { getAll: () => [], setAll: () => {} } }
+  );
+}
+
+export async function getVendorProfile() {
+  const { cookies } = await import("next/headers");
+  const cookieStore = cookies();
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll() {},
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) throw new Error("Not authenticated");
+
+  const { data, error } = await supabase
+    .from("vendors")
+    .select("id, name, email, phone, business_name, status")
+    .eq("email", user.email)
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function getVendorProducts(vendorId: string) {
+  const adminClient = getAdminClient();
+  const { data, error } = await adminClient
+    .from("products")
+    .select("*")
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as Product[];
+}
+
+export async function getVendorOrders(vendorId: string) {
+  const adminClient = getAdminClient();
+  const { data, error } = await adminClient
+    .from("admin_orders")
+    .select("*")
+    .eq("vendor_id", vendorId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updateProductStock(productId: string, stock: number) {
+  const adminClient = getAdminClient();
+  const { error } = await adminClient
+    .from("products")
+    .update({ stock })
+    .eq("id", productId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function createVendorProduct(formData: FormData, vendorId: string) {
+  const adminClient = getAdminClient();
+
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  const price = parseInt(formData.get("price") as string) || 0;
+  const stock = parseInt(formData.get("stock") as string) || 0;
+  const category = formData.get("category") as string;
+  const image_url = formData.get("image_url") as string;
+  const is_featured = formData.get("is_featured") === "true";
+
+  const { error } = await adminClient.from("products").insert({
+    name,
+    description: description || null,
+    price,
+    stock,
+    category: category || null,
+    image_url: image_url || null,
+    is_featured,
+    vendor_id: vendorId,
+  });
+
+  if (error) throw new Error(error.message);
+}

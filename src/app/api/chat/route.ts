@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { streamText, convertToModelMessages } from "ai";
 import { createServerClient } from "@supabase/ssr";
 
 const openrouter = createOpenAI({
@@ -43,6 +43,8 @@ export async function POST(req: Request) {
             .join("\n")
         : "The store currently has no products listed.";
 
+    const modelMessages = await convertToModelMessages(messages);
+
     const result = await streamText({
       model: openrouter.chat("google/gemini-2.5-flash"),
       system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
@@ -73,7 +75,7 @@ Samsung · Apple · Sony · JBL · Bose · Xiaomi · Dyson · Anker
 6. If asked something you don't know, say "Let me connect you with our team on WhatsApp"
 7. Always include a direct call-to-action (view product, browse category, etc.)
 8. Never make up technical specifications`,
-      messages,
+      messages: modelMessages,
     });
 
     return result.toTextStreamResponse();

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   category TEXT NOT NULL,
   image_url TEXT,
   is_featured BOOLEAN DEFAULT false,
+  vendor_id UUID REFERENCES public.vendors(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -54,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.customers (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Orders Table
+-- Customer Orders Table (from checkout flow)
 CREATE TABLE IF NOT EXISTS public.orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
@@ -71,6 +72,39 @@ CREATE TABLE IF NOT EXISTS public.notification_subscriptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
   subscription JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ==============================================================================
+-- NEW TABLES FOR ADMIN/VENDOR SYSTEM
+-- ==============================================================================
+
+-- Vendors Table
+CREATE TABLE IF NOT EXISTS public.vendors (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone TEXT,
+  business_name TEXT,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Admin Orders Table (receipt-based orders managed by admin)
+CREATE TABLE IF NOT EXISTS public.admin_orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  receipt_number TEXT UNIQUE NOT NULL,
+  customer_name TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  customer_email TEXT,
+  items JSONB NOT NULL DEFAULT '[]',
+  subtotal INTEGER NOT NULL,
+  delivery_fee INTEGER DEFAULT 0,
+  total INTEGER NOT NULL,
+  mpesa_reference TEXT NOT NULL,
+  vendor_id UUID REFERENCES public.vendors(id) ON DELETE SET NULL,
+  status TEXT DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'dispatched', 'delivered', 'refunded')),
+  notes TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -107,6 +141,8 @@ ALTER TABLE public.subscribers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_orders ENABLE ROW LEVEL SECURITY;
 
 -- ------------------------------------------------------------------------------
 -- 5. POLICIES
@@ -120,6 +156,22 @@ CREATE POLICY "Allow public read access on products" ON public.products
 DROP POLICY IF EXISTS "Allow authenticated full access on products" ON public.products;
 CREATE POLICY "Allow authenticated full access on products" ON public.products
   FOR ALL TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow vendor read own products" ON public.products;
+CREATE POLICY "Allow vendor read own products" ON public.products
+  FOR SELECT TO authenticated
+  USING (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()));
+
+DROP POLICY IF EXISTS "Allow vendor insert own products" ON public.products;
+CREATE POLICY "Allow vendor insert own products" ON public.products
+  FOR INSERT TO authenticated
+  WITH CHECK (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()));
+
+DROP POLICY IF EXISTS "Allow vendor update own products" ON public.products;
+CREATE POLICY "Allow vendor update own products" ON public.products
+  FOR UPDATE TO authenticated
+  USING (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()))
+  WITH CHECK (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()));
 
 -- Subscribers Policies
 DROP POLICY IF EXISTS "Allow public insert on subscribers" ON public.subscribers;
@@ -137,7 +189,7 @@ CREATE POLICY "Allow customers to manage their own profile" ON public.customers
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
--- Orders Policies
+-- Orders Policies (customer checkout)
 DROP POLICY IF EXISTS "Allow customers to manage their own orders" ON public.orders;
 CREATE POLICY "Allow customers to manage their own orders" ON public.orders
   FOR ALL TO authenticated
@@ -150,6 +202,30 @@ CREATE POLICY "Allow customers to manage their own subscriptions" ON public.noti
   FOR ALL TO authenticated
   USING (customer_id IN (SELECT id FROM public.customers WHERE user_id = auth.uid()))
   WITH CHECK (customer_id IN (SELECT id FROM public.customers WHERE user_id = auth.uid()));
+
+-- Vendors Policies
+DROP POLICY IF EXISTS "Allow public read vendors" ON public.vendors;
+CREATE POLICY "Allow public read vendors" ON public.vendors
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow admin all vendors" ON public.vendors;
+CREATE POLICY "Allow admin all vendors" ON public.vendors
+  FOR ALL TO authenticated USING (true);
+
+DROP POLICY IF EXISTS "Allow vendor read own" ON public.vendors;
+CREATE POLICY "Allow vendor read own" ON public.vendors
+  FOR SELECT TO authenticated
+  USING (email = auth.email());
+
+-- Admin Orders Policies
+DROP POLICY IF EXISTS "Allow public read admin_orders by receipt" ON public.admin_orders;
+CREATE POLICY "Allow public read admin_orders by receipt" ON public.admin_orders
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow vendor read own admin_orders" ON public.admin_orders;
+CREATE POLICY "Allow vendor read own admin_orders" ON public.admin_orders
+  FOR SELECT TO authenticated
+  USING (vendor_id IN (SELECT id FROM public.vendors WHERE email = auth.email()));
 
 -- ------------------------------------------------------------------------------
 -- 6. SEED DATA (Clean, conflict-safe upserts)
@@ -187,4 +263,3 @@ VALUES
     'https://images.unsplash.com/photo-1621259182978-fbf93132e53d?q=80&w=600&auto=format&fit=crop'
   )
 ON CONFLICT (name) DO NOTHING;
-

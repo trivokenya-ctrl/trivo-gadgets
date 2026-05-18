@@ -45,6 +45,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
+  // Protect all /vendor routes except /vendor itself (login page)
+  if (request.nextUrl.pathname.startsWith("/vendor/dashboard")) {
+    if (!user) {
+      return NextResponse.redirect(new URL("/vendor", request.url));
+    }
+  }
+
+  // Redirect /vendor to /vendor/dashboard if already logged in
+  if (request.nextUrl.pathname === "/vendor" && user) {
+    return NextResponse.redirect(new URL("/vendor/dashboard", request.url));
+  }
+
   // Protect /account routes - redirect to login if not authenticated
   if (request.nextUrl.pathname.startsWith("/account")) {
     if (!user) {

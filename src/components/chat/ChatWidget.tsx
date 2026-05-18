@@ -12,8 +12,8 @@ const suggestions = [
 ];
 
 interface ChatHelpers {
-  messages: Array<{ id: string; role: string; content: string }>;
-  append: (message: { role: string; content: string }) => Promise<string | undefined>;
+  messages: Array<{ id: string; role: string; content: string; parts?: Array<{ type: string; text?: string }> }>;
+  sendMessage: (message: { text: string }) => Promise<void>;
   status: string;
   error: Error | undefined;
 }
@@ -27,7 +27,7 @@ export default function ChatWidget() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chat = useChat() as unknown as ChatHelpers;
-  const { messages, append, status, error } = chat;
+  const { messages, sendMessage, status, error } = chat;
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -41,12 +41,12 @@ export default function ChatWidget() {
     const text = input;
     setInput("");
     setShowSuggestions(false);
-    append({ role: "user", content: text });
+    sendMessage({ text });
   };
 
   const handleSuggestion = (text: string) => {
     setShowSuggestions(false);
-    append({ role: "user", content: text });
+    sendMessage({ text });
   };
 
   const [isDesktop, setIsDesktop] = useState(false);
@@ -141,7 +141,7 @@ export default function ChatWidget() {
                         : "bg-chat-bubble text-foreground border border-subtle rounded-bl-sm"
                     }`}
                   >
-                    {m.content}
+                    {(Array.isArray(m.parts) ? m.parts.map((p: { type: string; text?: string }) => p.type === "text" ? p.text : "").join("") : m.content) || ""}
                   </div>
                 </div>
               ))
