@@ -1,18 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Script from "next/script";
 
-interface CaptchaWindow {
-  onVendorCaptchaSuccess?: (token: string) => void;
-  onVendorCaptchaExpired?: () => void;
-  onVendorCaptchaError?: () => void;
-  hcaptcha?: {
-    reset: () => void;
-  };
-}
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672";
 
 export default function VendorLogin() {
   const [email, setEmail] = useState("");
@@ -20,25 +13,33 @@ export default function VendorLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaReady, setCaptchaReady] = useState(false);
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    const w = window as unknown as CaptchaWindow;
-    w.onVendorCaptchaSuccess = (token: string) => {
-      setCaptchaToken(token);
-    };
-    w.onVendorCaptchaExpired = () => {
-      setCaptchaToken("");
-    };
-    w.onVendorCaptchaError = () => {
-      setCaptchaToken("");
-    };
+    const checkCaptcha = setInterval(() => {
+      const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+      if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+        try {
+          const id = w.hcaptcha.render(captchaRef.current, {
+            sitekey: HCAPTCHA_SITEKEY,
+            theme: "dark",
+            callback: (token: string) => { setCaptchaToken(token); },
+            "expired-callback": () => { setCaptchaToken(""); },
+            "error-callback": () => { setCaptchaToken(""); },
+          });
+          widgetIdRef.current = id;
+          setCaptchaReady(true);
+        } catch { /* retry */ }
+        clearInterval(checkCaptcha);
+      }
+    }, 200);
 
-    return () => {
-      delete w.onVendorCaptchaSuccess;
-      delete w.onVendorCaptchaExpired;
-      delete w.onVendorCaptchaError;
-    };
+    setTimeout(() => clearInterval(checkCaptcha), 15000);
+
+    return () => clearInterval(checkCaptcha);
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -55,20 +56,12 @@ export default function VendorLogin() {
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken } });
 
-    // Reset captcha
-    const w = window as unknown as CaptchaWindow;
-    if (w.hcaptcha) {
-      w.hcaptcha.reset();
-    }
-    setCaptchaToken("");
-
     if (authError) {
       setError("Wrong email or password");
       setLoading(false);
       return;
     }
 
-    // Check if user exists in vendors table
     const { data: vendor } = await supabase
       .from("vendors")
       .select("id, status")
@@ -114,6 +107,7 @@ export default function VendorLogin() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              aria-label="Email"
               className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors text-sm"
             />
           </div>
@@ -124,19 +118,19 @@ export default function VendorLogin() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              aria-label="Password"
               className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors text-sm"
             />
           </div>
 
-          <div className="flex justify-center my-4">
-            <div
-              className="h-captcha"
-              data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
-              data-callback="onVendorCaptchaSuccess"
-              data-expired-callback="onVendorCaptchaExpired"
-              data-error-callback="onVendorCaptchaError"
-              data-theme="dark"
-            />
+          <div className="flex justify-center my-4 min-h-[80px] items-center">
+            {!captchaReady ? (
+              <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                Loading security check...
+              </div>
+            ) : null}
+            <div ref={captchaRef} />
           </div>
 
           <button
@@ -152,7 +146,28 @@ export default function VendorLogin() {
           </button>
         </form>
       </div>
-      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
+      <Script
+        src="https://js.hcaptcha.com/1/api.js?render=explicit"
+        async
+        defer
+        strategy="lazyOnload"
+        onLoad={() => {
+          const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+          if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+            try {
+              const id = w.hcaptcha.render(captchaRef.current, {
+                sitekey: HCAPTCHA_SITEKEY,
+                theme: "dark",
+                callback: (token: string) => { setCaptchaToken(token); },
+                "expired-callback": () => { setCaptchaToken(""); },
+                "error-callback": () => { setCaptchaToken(""); },
+              });
+              widgetIdRef.current = id;
+              setCaptchaReady(true);
+            } catch { /* ignore */ }
+          }
+        }}
+      />
     </div>
   );
 }

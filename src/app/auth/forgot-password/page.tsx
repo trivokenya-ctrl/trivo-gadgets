@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import Script from "next/script";
 import { Mail, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
 
-interface ForgotCaptchaWindow {
-  onForgotCaptchaSuccess?: (token: string) => void;
-  onForgotCaptchaExpired?: () => void;
-  onForgotCaptchaError?: () => void;
-  hcaptcha?: {
-    reset: () => void;
-  };
-}
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -21,25 +14,31 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaReady, setCaptchaReady] = useState(false);
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    const w = window as unknown as ForgotCaptchaWindow;
-    w.onForgotCaptchaSuccess = (token: string) => {
-      setCaptchaToken(token);
-    };
-    w.onForgotCaptchaExpired = () => {
-      setCaptchaToken("");
-    };
-    w.onForgotCaptchaError = () => {
-      setCaptchaToken("");
-    };
-
-    return () => {
-      delete w.onForgotCaptchaSuccess;
-      delete w.onForgotCaptchaExpired;
-      delete w.onForgotCaptchaError;
-    };
+    const checkCaptcha = setInterval(() => {
+      const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+      if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+        try {
+          const id = w.hcaptcha.render(captchaRef.current, {
+            sitekey: HCAPTCHA_SITEKEY,
+            theme: "dark",
+            callback: (token: string) => { setCaptchaToken(token); },
+            "expired-callback": () => { setCaptchaToken(""); },
+            "error-callback": () => { setCaptchaToken(""); },
+          });
+          widgetIdRef.current = id;
+          setCaptchaReady(true);
+        } catch { /* retry */ }
+        clearInterval(checkCaptcha);
+      }
+    }, 200);
+    setTimeout(() => clearInterval(checkCaptcha), 15000);
+    return () => clearInterval(checkCaptcha);
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -62,10 +61,6 @@ export default function ForgotPasswordPage() {
       if (error) {
         setError(error.message);
         setLoading(false);
-        const w = window as unknown as ForgotCaptchaWindow;
-        if (w.hcaptcha) {
-          w.hcaptcha.reset();
-        }
         setCaptchaToken("");
         return;
       }
@@ -75,10 +70,6 @@ export default function ForgotPasswordPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
-      const w = window as unknown as ForgotCaptchaWindow;
-      if (w.hcaptcha) {
-        w.hcaptcha.reset();
-      }
       setCaptchaToken("");
     }
   };
@@ -143,15 +134,14 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <div className="flex justify-center my-4">
-                <div
-                  className="h-captcha"
-                  data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
-                  data-callback="onForgotCaptchaSuccess"
-                  data-expired-callback="onForgotCaptchaExpired"
-                  data-error-callback="onForgotCaptchaError"
-                  data-theme="dark"
-                />
+              <div className="flex justify-center my-4 min-h-[80px] items-center">
+                {!captchaReady ? (
+                  <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+                    <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                    Loading security check...
+                  </div>
+                ) : null}
+                <div ref={captchaRef} />
               </div>
 
               {error && (
@@ -186,7 +176,28 @@ export default function ForgotPasswordPage() {
           )}
         </div>
       </div>
-      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
+      <Script
+        src="https://js.hcaptcha.com/1/api.js?render=explicit"
+        async
+        defer
+        strategy="lazyOnload"
+        onLoad={() => {
+          const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+          if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+            try {
+              const id = w.hcaptcha.render(captchaRef.current, {
+                sitekey: HCAPTCHA_SITEKEY,
+                theme: "dark",
+                callback: (token: string) => { setCaptchaToken(token); },
+                "expired-callback": () => { setCaptchaToken(""); },
+                "error-callback": () => { setCaptchaToken(""); },
+              });
+              widgetIdRef.current = id;
+              setCaptchaReady(true);
+            } catch { /* ignore */ }
+          }
+        }}
+      />
     </div>
   );
 }

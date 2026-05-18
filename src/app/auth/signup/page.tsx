@@ -1,20 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
 import { Mail, Lock, User, Phone, Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
 
-interface SignupCaptchaWindow {
-  onSignUpCaptchaSuccess?: (token: string) => void;
-  onSignUpCaptchaExpired?: () => void;
-  onSignUpCaptchaError?: () => void;
-  hcaptcha?: {
-    reset: () => void;
-  };
-}
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -26,26 +19,32 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaReady, setCaptchaReady] = useState(false);
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    const w = window as unknown as SignupCaptchaWindow;
-    w.onSignUpCaptchaSuccess = (token: string) => {
-      setCaptchaToken(token);
-    };
-    w.onSignUpCaptchaExpired = () => {
-      setCaptchaToken("");
-    };
-    w.onSignUpCaptchaError = () => {
-      setCaptchaToken("");
-    };
-
-    return () => {
-      delete w.onSignUpCaptchaSuccess;
-      delete w.onSignUpCaptchaExpired;
-      delete w.onSignUpCaptchaError;
-    };
+    const checkCaptcha = setInterval(() => {
+      const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+      if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+        try {
+          const id = w.hcaptcha.render(captchaRef.current, {
+            sitekey: HCAPTCHA_SITEKEY,
+            theme: "dark",
+            callback: (token: string) => { setCaptchaToken(token); },
+            "expired-callback": () => { setCaptchaToken(""); },
+            "error-callback": () => { setCaptchaToken(""); },
+          });
+          widgetIdRef.current = id;
+          setCaptchaReady(true);
+        } catch { /* retry */ }
+        clearInterval(checkCaptcha);
+      }
+    }, 200);
+    setTimeout(() => clearInterval(checkCaptcha), 15000);
+    return () => clearInterval(checkCaptcha);
   }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -69,11 +68,6 @@ export default function SignupPage() {
         },
       });
 
-      // Reset hCaptcha
-      const w = window as unknown as SignupCaptchaWindow;
-      if (w.hcaptcha) {
-        w.hcaptcha.reset();
-      }
       setCaptchaToken("");
 
       if (authError) {
@@ -105,11 +99,6 @@ export default function SignupPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
-      // Reset hCaptcha on error
-      const w = window as unknown as SignupCaptchaWindow;
-      if (w.hcaptcha) {
-        w.hcaptcha.reset();
-      }
       setCaptchaToken("");
     }
   };
@@ -226,16 +215,14 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* hCaptcha Widget */}
-            <div className="flex justify-center my-4">
-              <div
-                className="h-captcha"
-                data-sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "a5a0d21c-04c8-4ffa-97a2-75cafa4e9672"}
-                data-callback="onSignUpCaptchaSuccess"
-                data-expired-callback="onSignUpCaptchaExpired"
-                data-error-callback="onSignUpCaptchaError"
-                data-theme="dark"
-              />
+            <div className="flex justify-center my-4 min-h-[80px] items-center">
+              {!captchaReady ? (
+                <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+                  <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                  Loading security check...
+                </div>
+              ) : null}
+              <div ref={captchaRef} />
             </div>
 
             {error && (
@@ -266,7 +253,28 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
-      <Script src="https://js.hcaptcha.com/1/api.js" async defer strategy="afterInteractive" />
+      <Script
+        src="https://js.hcaptcha.com/1/api.js?render=explicit"
+        async
+        defer
+        strategy="lazyOnload"
+        onLoad={() => {
+          const w = window as unknown as { hcaptcha?: { render: (el: string | HTMLElement, opts: Record<string, unknown>) => string } };
+          if (w.hcaptcha && captchaRef.current && !widgetIdRef.current) {
+            try {
+              const id = w.hcaptcha.render(captchaRef.current, {
+                sitekey: HCAPTCHA_SITEKEY,
+                theme: "dark",
+                callback: (token: string) => { setCaptchaToken(token); },
+                "expired-callback": () => { setCaptchaToken(""); },
+                "error-callback": () => { setCaptchaToken(""); },
+              });
+              widgetIdRef.current = id;
+              setCaptchaReady(true);
+            } catch { /* ignore */ }
+          }
+        }}
+      />
     </div>
   );
 }
