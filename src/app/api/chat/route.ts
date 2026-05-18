@@ -1,6 +1,9 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, convertToModelMessages } from "ai";
+import { streamText } from "ai";
 import { createServerClient } from "@supabase/ssr";
+import { NextRequest } from "next/server";
+
+export const runtime = "edge";
 
 const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -11,9 +14,10 @@ const openrouter = createOpenAI({
   },
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+    const messages = body.messages;
 
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "Invalid request body" }), {
@@ -30,7 +34,7 @@ export async function POST(req: Request) {
 
     const { data: products } = await supabase
       .from("products")
-      .select("*")
+      .select("id, name, price, stock, category, description")
       .order("created_at", { ascending: false });
 
     const inventory =
@@ -38,15 +42,23 @@ export async function POST(req: Request) {
         ? products
             .map(
               (p) =>
-                `[ID:${p.id}] ${p.name} | KES ${p.price.toLocaleString()} | Stock:${p.stock} | ${p.category || "General"} | ${p.description || ""}`
+                `[ID:${p.id}] ${p.name} | KES ${Number(p.price).toLocaleString()} | Stock:${p.stock} | ${p.category || "General"} | ${p.description || ""}`
             )
             .join("\n")
         : "The store currently has no products listed.";
 
-    const modelMessages = await convertToModelMessages(messages);
+    // Normalize messages to simple role/content format for compatibility
+    const normalizedMessages = messages.map((m: { role: string; content: string | Array<{ type: string; text?: string }> }) => ({
+      role: m.role as "user" | "assistant",
+      content: typeof m.content === "string"
+        ? m.content
+        : Array.isArray(m.content)
+          ? m.content.map((p) => (p.type === "text" ? p.text || "" : "")).join("")
+          : String(m.content),
+    }));
 
     const result = await streamText({
-      model: openrouter.chat("google/gemini-2.5-flash"),
+      model: openrouter.chat("google/gemini-2.5-flash-preview-05-20"),
       system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
 
 ## YOUR PERSONALITY
@@ -75,7 +87,7 @@ Samsung · Apple · Sony · JBL · Bose · Xiaomi · Dyson · Anker
 6. If asked something you don't know, say "Let me connect you with our team on WhatsApp"
 7. Always include a direct call-to-action (view product, browse category, etc.)
 8. Never make up technical specifications`,
-      messages: modelMessages,
+      messages: normalizedMessages,
     });
 
     return result.toTextStreamResponse();

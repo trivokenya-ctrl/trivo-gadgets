@@ -256,6 +256,11 @@ CREATE POLICY "Allow vendor read own" ON public.vendors
   FOR SELECT TO authenticated
   USING (email = auth.email());
 
+DROP POLICY IF EXISTS "Allow vendor insert own" ON public.vendors;
+CREATE POLICY "Allow vendor insert own" ON public.vendors
+  FOR INSERT TO authenticated
+  WITH CHECK (email = auth.email());
+
 -- Admin Users Table (for access control)
 CREATE TABLE IF NOT EXISTS public.admin_users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -287,6 +292,11 @@ DROP POLICY IF EXISTS "Allow admin users to select own" ON public.admin_users;
 CREATE POLICY "Allow admin users to select own" ON public.admin_users
   FOR SELECT TO authenticated
   USING (email = auth.email());
+
+DROP POLICY IF EXISTS "Allow admin users to insert own" ON public.admin_users;
+CREATE POLICY "Allow admin users to insert own" ON public.admin_users
+  FOR INSERT TO authenticated
+  WITH CHECK (email = auth.email());
 
 -- ------------------------------------------------------------------------------
 -- 6. SEED DATA (Clean, conflict-safe upserts)

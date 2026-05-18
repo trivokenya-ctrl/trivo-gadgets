@@ -109,8 +109,19 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
+                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    reg.update();
+                  });
                 });
+                if ('caches' in window) {
+                  caches.keys().then(function(names) {
+                    for (let name of names) {
+                      if (name !== 'trivo-v2') {
+                        caches.delete(name);
+                      }
+                    }
+                  });
+                }
               }
             `,
           }}
