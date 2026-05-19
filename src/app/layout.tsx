@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
@@ -6,7 +7,6 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import CartDrawer from "@/components/cart/CartDrawer";
-import ChatWidget from "@/components/chat/ChatWidget";
 import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -82,7 +82,20 @@ export default function RootLayout({
               </CartProvider>
             </WishlistProvider>
           </ToastProvider>
-          <ChatWidget />
+          {/* Tawk.to Script */}
+          <Script id="tawk-to" strategy="lazyOnload">
+            {\`
+              var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+              (function(){
+              var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+              s1.async=true;
+              s1.src='https://embed.tawk.to/6a0caec8a536181c39897da1/1jp0olged';
+              s1.charset='UTF-8';
+              s1.setAttribute('crossorigin','*');
+              s0.parentNode.insertBefore(s1,s0);
+              })();
+            \`}
+          </Script>
           <PushNotificationPrompt />
         </ThemeProvider>
 
