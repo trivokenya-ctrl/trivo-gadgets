@@ -87,12 +87,12 @@ export default function AdminRegisterPage() {
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="h-8 w-8 text-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-3">Check your email</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-3">Registration Successful</h1>
           <p className="text-muted text-sm mb-2">
-            We sent an admin confirmation link to <span className="text-foreground font-medium">{email}</span>
+            Your admin account for <span className="text-foreground font-medium">{email}</span> has been created.
           </p>
           <p className="text-muted-foreground text-xs mb-8">
-            Click the link to activate your administrator account, then sign in.
+            We've sent a welcome email to your inbox. You can now sign in to access the admin dashboard.
           </p>
           <Link
             href="/auth/login"

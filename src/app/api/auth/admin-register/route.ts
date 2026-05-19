@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Uses service role to bypass RLS — safe because this is server-side only
 const supabaseAdmin = createClient(
@@ -20,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // They'll confirm via email
+      email_confirm: true, // Auto-confirm so admin can log in immediately
       user_metadata: { full_name: fullName, phone, role },
     });
 
@@ -38,6 +41,27 @@ export async function POST(req: NextRequest) {
       // Clean up auth user if admin insert fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json({ error: adminError.message }, { status: 500 });
+    }
+
+    // Send welcome email via Resend
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "Trivo Kenya <receipts@trivokenya.store>",
+        to: email,
+        subject: "Welcome to Trivo Kenya Admin Portal",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563EB;">Welcome, ${fullName || 'Admin'}!</h2>
+            <p>Your administrator account for Trivo Kenya has been successfully created.</p>
+            <p>You can now log in to the admin dashboard using your email address and password to manage the store.</p>
+            <br/>
+            <p>Best regards,<br/>The Trivo Kenya Team</p>
+          </div>
+        `,
+      });
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail the registration if email fails
     }
 
     return NextResponse.json({

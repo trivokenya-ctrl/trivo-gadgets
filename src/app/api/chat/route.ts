@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const result = await streamText({
-      model: openrouter.chat("google/gemini-2.5-flash-preview-05-20"),
+      model: openrouter.chat("google/gemini-1.5-flash"),
       system: `You are KYLO — the premium AI concierge for Trivo Kenya, Kenya's premier destination for elite tech gadgets, smart home innovations, and luxury accessories.
 
 ## YOUR PERSONALITY
