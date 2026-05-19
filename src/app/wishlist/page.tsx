@@ -6,10 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
-import type { Database } from "@/types/database.types";
 import { Heart, ShoppingCart, Trash2, ChevronRight } from "lucide-react";
-
-type Product = Database["public"]["Tables"]["products"]["Row"];
 
 export default function WishlistPage() {
   const { items, removeItem } = useWishlist();
@@ -69,10 +66,10 @@ export default function WishlistPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => {
-                          const partial: Partial<Product> = {
+                          addToCart({
                             id: item.id,
                             name: item.name,
-                            price: item.price,
+                            price: item.price ?? 0,
                             image_url: item.image_url,
                             stock: 1,
                             description: null,
@@ -82,8 +79,9 @@ export default function WishlistPage() {
                             seo_description: null,
                             focus_keyword: null,
                             cj_product_id: null,
-                          };
-                          addToCart(partial as Product);
+                            vendor_id: null,
+                            created_at: new Date().toISOString(),
+                          });
                           removeItem(item.id);
                         }}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-accent text-black px-4 py-2 text-xs font-bold transition-all hover:scale-105 active:scale-95"
