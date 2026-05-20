@@ -362,8 +362,6 @@ export default function VendorDashboardClient({ vendor }: { vendor: Vendor }) {
           </table>
         </div>
       </section>
-
-              </section>
             )}
 
             {tab === "orders" && (

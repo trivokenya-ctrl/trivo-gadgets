@@ -69,7 +69,6 @@ export default function AdminDashboardClient({
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showNewTransaction, setShowNewTransaction] = useState(false);
   const [showAddVendor, setShowAddVendor] = useState(false);
-  const [showAddVendor, setShowAddVendor] = useState(false);
   const [editingVendorId, setEditingVendorId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // CJ Import state
