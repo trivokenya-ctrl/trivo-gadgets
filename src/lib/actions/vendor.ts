@@ -2,6 +2,7 @@
 
 import { createServerClient } from "@supabase/ssr";
 import { Database } from "@/types/database.types";
+import { revalidatePath } from "next/cache";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -72,6 +73,7 @@ export async function updateProductStock(productId: string, stock: number) {
     .eq("id", productId);
 
   if (error) throw new Error(error.message);
+  revalidatePath("/");
 }
 
 export async function createVendorProduct(formData: FormData, vendorId: string) {
@@ -83,7 +85,27 @@ export async function createVendorProduct(formData: FormData, vendorId: string) 
   const stock = parseInt(formData.get("stock") as string) || 0;
   const category = formData.get("category") as string;
   const image_url = formData.get("image_url") as string;
+  const image_file = formData.get("image_file") as File | null;
   const is_featured = formData.get("is_featured") === "true";
+
+  let final_image_url = image_url;
+
+  if (image_file && image_file.size > 0) {
+    const fileExt = image_file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { error: uploadError } = await adminClient.storage
+      .from("product-images")
+      .upload(fileName, image_file);
+      
+    if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+    
+    const { data: { publicUrl } } = adminClient.storage
+      .from("product-images")
+      .getPublicUrl(fileName);
+      
+    final_image_url = publicUrl;
+  }
 
   const { error } = await adminClient.from("products").insert({
     name,
@@ -91,10 +113,11 @@ export async function createVendorProduct(formData: FormData, vendorId: string) 
     price,
     stock,
     category: category || null,
-    image_url: image_url || null,
+    image_url: final_image_url || null,
     is_featured,
     vendor_id: vendorId,
   });
 
   if (error) throw new Error(error.message);
+  revalidatePath("/");
 }

@@ -2,6 +2,7 @@
 
 import { createServerClient } from "@supabase/ssr";
 import { Database } from "@/types/database.types";
+import { revalidatePath } from "next/cache";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -21,6 +22,7 @@ export async function createProduct(formData: FormData) {
   const stock = parseInt(formData.get("stock") as string) || 0;
   const category = formData.get("category") as string;
   const image_url = formData.get("image_url") as string;
+  const image_file = formData.get("image_file") as File | null;
   const is_featured = formData.get("is_featured") === "true";
   const seo_title = formData.get("seo_title") as string;
   const seo_description = formData.get("seo_description") as string;
@@ -31,13 +33,32 @@ export async function createProduct(formData: FormData) {
     await supabase.from("products").update({ is_featured: false });
   }
 
+  let final_image_url = image_url;
+
+  if (image_file && image_file.size > 0) {
+    const fileExt = image_file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(fileName, image_file);
+      
+    if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(fileName);
+      
+    final_image_url = publicUrl;
+  }
+
   const { error } = await supabase.from("products").insert({
     name,
     description: description || null,
     price,
     stock,
     category: category || null,
-    image_url: image_url || null,
+    image_url: final_image_url || null,
     is_featured,
     seo_title: seo_title || null,
     seo_description: seo_description || null,
@@ -46,6 +67,7 @@ export async function createProduct(formData: FormData) {
   });
 
   if (error) throw new Error(error.message);
+  revalidatePath("/");
 }
 
 export async function updateProduct(id: string, formData: FormData) {
@@ -56,6 +78,7 @@ export async function updateProduct(id: string, formData: FormData) {
   const stock = parseInt(formData.get("stock") as string) || 0;
   const category = formData.get("category") as string;
   const image_url = formData.get("image_url") as string;
+  const image_file = formData.get("image_file") as File | null;
   const is_featured = formData.get("is_featured") === "true";
   const seo_title = formData.get("seo_title") as string;
   const seo_description = formData.get("seo_description") as string;
@@ -63,6 +86,25 @@ export async function updateProduct(id: string, formData: FormData) {
 
   if (is_featured) {
     await supabase.from("products").update({ is_featured: false }).neq("id", id);
+  }
+
+  let final_image_url = image_url;
+
+  if (image_file && image_file.size > 0) {
+    const fileExt = image_file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(fileName, image_file);
+      
+    if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from("product-images")
+      .getPublicUrl(fileName);
+      
+    final_image_url = publicUrl;
   }
 
   const { error } = await supabase
@@ -73,7 +115,7 @@ export async function updateProduct(id: string, formData: FormData) {
       price,
       stock,
       category: category || null,
-      image_url: image_url || null,
+      image_url: final_image_url || null,
       is_featured,
       seo_title: seo_title || null,
       seo_description: seo_description || null,
@@ -82,12 +124,14 @@ export async function updateProduct(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) throw new Error(error.message);
+  revalidatePath("/");
 }
 
 export async function deleteProduct(id: string) {
   const supabase = getAdminClient();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  revalidatePath("/");
 }
 
 export async function getAdminStats() {

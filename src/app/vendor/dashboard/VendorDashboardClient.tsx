@@ -65,10 +65,11 @@ export default function VendorDashboardClient({ vendor }: { vendor: Vendor }) {
     stock: "0",
     category: "",
     image_url: "",
+    image_file: null as File | null,
   });
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", stock: "0", category: "", image_url: "" });
+    setForm({ name: "", description: "", price: "", stock: "0", category: "", image_url: "", image_file: null });
     setShowForm(false);
   };
 
@@ -83,6 +84,9 @@ export default function VendorDashboardClient({ vendor }: { vendor: Vendor }) {
       fd.set("stock", form.stock);
       fd.set("category", form.category);
       fd.set("image_url", form.image_url);
+      if (form.image_file) {
+        fd.set("image_file", form.image_file);
+      }
       fd.set("is_featured", "false");
 
       await createVendorProduct(fd, vendor.id);
@@ -282,8 +286,12 @@ export default function VendorDashboardClient({ vendor }: { vendor: Vendor }) {
                   {categories.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div>
-                <input type="url" placeholder="Image URL" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent" />
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Product Image (Upload or Paste URL)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="url" placeholder="Paste Image URL" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent" />
+                  <input type="file" accept="image/*" onChange={(e) => setForm((f) => ({ ...f, image_file: e.target.files?.[0] || null }))} className="w-full bg-background border border-default rounded-lg px-4 py-2 text-sm text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent file:text-black hover:file:bg-accent/90" />
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-2">

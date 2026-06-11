@@ -337,3 +337,25 @@ VALUES
     'https://images.unsplash.com/photo-1621259182978-fbf93132e53d?q=80&w=600&auto=format&fit=crop'
   )
 ON CONFLICT (name) DO NOTHING;
+
+-- ------------------------------------------------------------------------------
+-- 7. STORAGE BUCKETS (Product Images)
+-- ------------------------------------------------------------------------------
+
+-- Create a bucket for product images (if it doesn't exist)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('product-images', 'product-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Authenticated insert" ON storage.objects;
+CREATE POLICY "Authenticated insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Authenticated update" ON storage.objects;
+CREATE POLICY "Authenticated update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'product-images');
+
+DROP POLICY IF EXISTS "Authenticated delete" ON storage.objects;
+CREATE POLICY "Authenticated delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'product-images');

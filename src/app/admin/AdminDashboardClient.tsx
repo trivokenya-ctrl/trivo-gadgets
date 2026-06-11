@@ -3,7 +3,8 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { Database } from "@/types/database.types";
-import { createProduct, updateProduct, deleteProduct, createOrder, updateOrderStatus, deleteOrder, createVendor, updateVendor, deleteVendor } from "@/lib/actions/admin";
+import { getAdminStatsFull, getAllOrders, getVendors, createProduct, updateProduct, deleteProduct, updateOrderStatus, createVendor, updateVendor, deleteVendor, createOrder, deleteOrder } from "@/lib/actions/admin";
+import { sendReceiptEmail } from "@/lib/email/receipt";
 import { analyzeProductSEO, getGradeColor, getGradeBg } from "@/lib/seo";
 import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3, DollarSign, ShoppingCart, Truck, Send, Eye, ExternalLink, Download, Loader2, ChevronLeft, Menu, LogOut } from "lucide-react";
 
@@ -21,10 +22,10 @@ const emptyForm = {
   stock: "0",
   category: "",
   image_url: "",
-  is_featured: false,
   seo_title: "",
   seo_description: "",
   focus_keyword: "",
+  image_file: null as File | null,
 };
 
 interface OrderItem {
@@ -171,6 +172,7 @@ export default function AdminDashboardClient({
       seo_title: product.seo_title || "",
       seo_description: product.seo_description || "",
       focus_keyword: product.focus_keyword || "",
+      image_file: null,
     });
     setEditingId(product.id);
     setShowForm(true);
@@ -188,6 +190,9 @@ export default function AdminDashboardClient({
       fd.set("stock", form.stock);
       fd.set("category", form.category);
       fd.set("image_url", form.image_url);
+      if (form.image_file) {
+        fd.set("image_file", form.image_file);
+      }
       fd.set("is_featured", form.is_featured ? "true" : "false");
       fd.set("seo_title", form.seo_title);
       fd.set("seo_description", form.seo_description);
@@ -519,8 +524,12 @@ export default function AdminDashboardClient({
                   {categories.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <div className="md:col-span-2 lg:col-span-3">
-                <input type="url" placeholder="Image URL" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent" />
+              <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase">Product Image (Upload or Paste URL)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input type="url" placeholder="Paste Image URL" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent" />
+                  <input type="file" accept="image/*" onChange={(e) => setForm((f) => ({ ...f, image_file: e.target.files?.[0] || null }))} className="w-full bg-background border border-default rounded-lg px-4 py-2 text-sm text-foreground file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-accent file:text-black hover:file:bg-accent/90" />
+                </div>
               </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -761,7 +770,6 @@ export default function AdminDashboardClient({
                   <button
                     onClick={async () => {
                       try {
-                        const { sendReceiptEmail } = await import("@/lib/email/receipt");
                         await sendReceiptEmail({
                           to: txSuccess.customerEmail as string,
                           receiptNumber: txSuccess.receiptNumber,
