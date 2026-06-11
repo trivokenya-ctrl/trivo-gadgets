@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { Database } from "@/types/database.types";
 import { getAdminStatsFull, getAllOrders, getVendors, createProduct, updateProduct, deleteProduct, updateOrderStatus, createVendor, updateVendor, deleteVendor, createOrder, deleteOrder } from "@/lib/actions/admin";
 import { sendReceiptEmail } from "@/lib/email/receipt";
 import { analyzeProductSEO, getGradeColor, getGradeBg } from "@/lib/seo";
-import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3, DollarSign, ShoppingCart, Truck, Send, Eye, ExternalLink, Download, Loader2, ChevronLeft, Menu, LogOut } from "lucide-react";
+import { Package, Users, AlertTriangle, PackageOpen, Plus, X, Edit2, Trash2, BarChart3, DollarSign, ShoppingCart, Truck, Send, Eye, ExternalLink, Download, Loader2, ChevronLeft, Menu, LogOut, Settings2 } from "lucide-react";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 type AdminOrder = Database["public"]["Tables"]["admin_orders"]["Row"];
@@ -37,6 +37,9 @@ const emptyForm = {
   variant_options: "",
   image_file: null as File | null,
 };
+
+type VisualVariantType = { type: string; values: string[] };
+type VisualVariantOption = { sku: string; options: Record<string, string>; price: number; stock: number; image: string };
 
 interface OrderItem {
   product_id?: string;
@@ -99,6 +102,13 @@ export default function AdminDashboardClient({
   });
   const [cjImportSuccess, setCjImportSuccess] = useState<{ id: string; name: string } | null>(null);
   const [cjImporting, setCjImporting] = useState(false);
+
+  // Visual variant builder state
+  const [visVariants, setVisVariants] = useState<VisualVariantType[]>([]);
+  const [visOptions, setVisOptions] = useState<VisualVariantOption[]>([]);
+  const [newVariantType, setNewVariantType] = useState("");
+  const [newVariantValue, setNewVariantValue] = useState<Record<number, string>>({});
+  const [showVariants, setShowVariants] = useState(false);
 
   interface CJProduct {
     pid: string;
@@ -166,11 +176,18 @@ export default function AdminDashboardClient({
   // --- Product handlers ---
   const resetForm = () => {
     setForm(emptyForm);
+    setVisVariants([]);
+    setVisOptions([]);
+    setShowVariants(false);
+    setNewVariantType("");
+    setNewVariantValue({});
     setShowForm(false);
     setEditingId(null);
   };
 
   const openEditForm = (product: Product) => {
+    const parsedVariants = (product.variants as VisualVariantType[]) || [];
+    const parsedOptions = (product.variant_options as VisualVariantOption[]) || [];
     setForm({
       name: product.name,
       description: product.description || "",
@@ -189,19 +206,30 @@ export default function AdminDashboardClient({
       features: JSON.stringify(product.features || []),
       specifications: JSON.stringify(product.specifications || {}),
       tags: JSON.stringify(product.tags || []),
-      variants: JSON.stringify(product.variants || []),
-      variant_options: JSON.stringify(product.variant_options || []),
+      variants: JSON.stringify(parsedVariants),
+      variant_options: JSON.stringify(parsedOptions),
       image_file: null,
     });
+    setVisVariants(parsedVariants);
+    setVisOptions(parsedOptions);
+    setShowVariants(parsedVariants.length > 0);
     setEditingId(product.id);
     setShowForm(true);
     setTab("products");
   };
 
+  // Sync visual variant state to JSON form fields
+  useEffect(() => {
+    setForm((f) => ({ ...f, variants: JSON.stringify(visVariants), variant_options: JSON.stringify(visOptions) }));
+  }, [visVariants, visOptions]);
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
+      // Sync visual variants to form fields before submit
+      const finalVariants = JSON.stringify(visVariants);
+      const finalOptions = JSON.stringify(visOptions);
       const fd = new FormData();
       fd.set("name", form.name);
       fd.set("description", form.description);
@@ -223,8 +251,8 @@ export default function AdminDashboardClient({
       fd.set("features", form.features);
       fd.set("specifications", form.specifications);
       fd.set("tags", form.tags);
-      fd.set("variants", form.variants);
-      fd.set("variant_options", form.variant_options);
+      fd.set("variants", finalVariants);
+      fd.set("variant_options", finalOptions);
 
       if (editingId) {
         await updateProduct(editingId, fd);
@@ -604,18 +632,210 @@ export default function AdminDashboardClient({
             </div>
 
             <div className="border-t border-default pt-4 mt-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Product Variants (Like WooCommerce)</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="text-[11px] text-muted-foreground block mb-1">Variant Types (JSON array, e.g. [{"{"}"type":"Color","values":["Red","Blue","Black"]{"}"}])</label>
-                  <textarea placeholder='[{"type": "Color", "values": ["Red", "Blue", "Black"]}, {"type": "Size", "values": ["S", "M", "L", "XL"]}]' rows={2} value={form.variants} onChange={(e) => setForm((f) => ({ ...f, variants: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none font-mono text-xs" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-muted-foreground block mb-1">Variant Options (JSON array with SKU, options, price, stock, image)</label>
-                  <textarea placeholder='[{"sku": "PROD-RED-M", "options": {"Color": "Red", "Size": "M"}, "price": 3500, "stock": 5, "image": ""}, {"sku": "PROD-BLUE-L", "options": {"Color": "Blue", "Size": "L"}, "price": 3500, "stock": 3, "image": ""}]' rows={3} value={form.variant_options} onChange={(e) => setForm((f) => ({ ...f, variant_options: e.target.value }))} className="w-full bg-background border border-default rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent resize-none font-mono text-xs" />
-                </div>
-                <p className="text-[11px] text-muted-foreground">Leave empty for simple products. When variant options exist, customers choose from available options.</p>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Variants (Colors, Sizes, etc.)</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowVariants((v) => !v)}
+                  className={`text-xs font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${showVariants ? "bg-accent/20 text-accent" : "bg-surface text-muted hover:text-foreground"}`}
+                >
+                  <Settings2 className="h-3.5 w-3.5" />
+                  {showVariants ? "Done Editing" : "Manage Variants"}
+                </button>
               </div>
+
+              {showVariants ? (
+                <div className="space-y-4">
+                  {/* Add Variant Type */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add variant type (e.g. Color, Size)"
+                      value={newVariantType}
+                      onChange={(e) => setNewVariantType(e.target.value)}
+                      className="flex-1 bg-background border border-default rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const t = newVariantType.trim();
+                        if (!t) return;
+                        if (visVariants.some((v) => v.type.toLowerCase() === t.toLowerCase())) return;
+                        setVisVariants((prev) => [...prev, { type: t, values: [] }]);
+                        setNewVariantType("");
+                      }}
+                      className="rounded-lg bg-accent px-3 py-2 text-xs font-bold text-black hover:bg-accent/80 transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Existing Variant Types */}
+                  {visVariants.length === 0 && (
+                    <p className="text-xs text-muted-foreground py-2">No variant types yet. Add Color, Size, Material, etc.</p>
+                  )}
+
+                  {visVariants.map((vt, vi) => (
+                    <div key={vi} className="rounded-xl border border-default bg-surface/30 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-foreground uppercase">{vt.type}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVisVariants((prev) => prev.filter((_, i) => i !== vi));
+                            setVisOptions([]);
+                          }}
+                          className="text-red-500 hover:text-red-400 p-1"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {vt.values.map((val, vei) => (
+                          <span key={vei} className="inline-flex items-center gap-1 rounded-lg bg-accent/20 text-accent text-xs font-medium px-2.5 py-1">
+                            {val}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...visVariants];
+                                updated[vi] = { ...vt, values: vt.values.filter((_, i) => i !== vei) };
+                                setVisVariants(updated);
+                                setVisOptions([]);
+                              }}
+                              className="hover:text-red-400"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            placeholder={`Add ${vt.type} value`}
+                            value={newVariantValue[vi] || ""}
+                            onChange={(e) => setNewVariantValue((prev) => ({ ...prev, [vi]: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                const val = (newVariantValue[vi] || "").trim();
+                                if (!val) return;
+                                if (vt.values.some((v) => v.toLowerCase() === val.toLowerCase())) return;
+                                const updated = [...visVariants];
+                                updated[vi] = { ...vt, values: [...vt.values, val] };
+                                setVisVariants(updated);
+                                setNewVariantValue((prev) => ({ ...prev, [vi]: "" }));
+                                setVisOptions([]);
+                              }
+                            }}
+                            className="w-24 bg-background border border-default rounded px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const val = (newVariantValue[vi] || "").trim();
+                              if (!val) return;
+                              if (vt.values.some((v) => v.toLowerCase() === val.toLowerCase())) return;
+                              const updated = [...visVariants];
+                              updated[vi] = { ...vt, values: [...vt.values, val] };
+                              setVisVariants(updated);
+                              setNewVariantValue((prev) => ({ ...prev, [vi]: "" }));
+                              setVisOptions([]);
+                            }}
+                            className="text-accent hover:text-accent/80 p-1"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Generate Variant Combinations */}
+                  {visVariants.length > 0 && visVariants.every((v) => v.values.length > 0) && (
+                    <div className="border-t border-default pt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-foreground">Variant Combinations (SKUs)</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Generate all combinations
+                            const combos = visVariants.reduce<string[][]>((acc, vt) => {
+                              if (acc.length === 0) return vt.values.map((v) => [v]);
+                              return acc.flatMap((existing) => vt.values.map((v) => [...existing, v]));
+                            }, []);
+                            const baseSku = form.name ? form.name.replace(/[^a-zA-Z0-9]/g, "-").toUpperCase().slice(0, 8) : "PROD";
+                            const generated: VisualVariantOption[] = combos.map((combo) => {
+                              const options: Record<string, string> = {};
+                              visVariants.forEach((vt, i) => { options[vt.type] = combo[i]; });
+                              const skuSuffix = combo.map((c) => c.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()).join("-");
+                              return {
+                                sku: `${baseSku}-${skuSuffix}`,
+                                options,
+                                price: parseInt(form.price) || 0,
+                                stock: 0,
+                                image: "",
+                              };
+                            });
+                            setVisOptions(generated);
+                          }}
+                          className="text-xs font-medium text-accent hover:underline"
+                        >
+                          Auto-generate combinations
+                        </button>
+                      </div>
+
+                      {visOptions.length > 0 && (
+                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                          {visOptions.map((opt, oi) => (
+                            <div key={oi} className="flex items-center gap-2 rounded-lg border border-default bg-card p-2">
+                              <span className="text-[10px] font-mono text-muted-foreground w-20 truncate" title={opt.sku}>{opt.sku}</span>
+                              <span className="text-xs text-foreground font-medium flex-1 truncate">
+                                {Object.entries(opt.options).map(([k, v]) => `${k}: ${v}`).join(" | ")}
+                              </span>
+                              <input
+                                type="number"
+                                placeholder="Price"
+                                value={opt.price || ""}
+                                onChange={(e) => {
+                                  const updated = [...visOptions];
+                                  updated[oi] = { ...opt, price: parseInt(e.target.value) || 0 };
+                                  setVisOptions(updated);
+                                }}
+                                className="w-20 bg-background border border-default rounded px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                              />
+                              <input
+                                type="number"
+                                placeholder="Stock"
+                                value={opt.stock ?? ""}
+                                onChange={(e) => {
+                                  const updated = [...visOptions];
+                                  updated[oi] = { ...opt, stock: parseInt(e.target.value) || 0 };
+                                  setVisOptions(updated);
+                                }}
+                                className="w-16 bg-background border border-default rounded px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setVisOptions((prev) => prev.filter((_, i) => i !== oi))}
+                                className="text-red-500 hover:text-red-400 p-1"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-muted-foreground">Set price and stock per combination. Leave empty for simple products with no variants.</p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground py-2">
+                  {visVariants.length > 0
+                    ? `${visVariants.length} variant type(s), ${visOptions.length} SKU(s) configured.`
+                    : "No variants configured. Click Manage Variants to add colors, sizes, etc."}
+                </p>
+              )}
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={resetForm} className="rounded-lg border border-default px-5 py-2 text-xs font-medium text-muted hover:text-foreground transition-colors">Cancel</button>

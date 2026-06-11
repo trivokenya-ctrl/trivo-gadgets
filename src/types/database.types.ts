@@ -362,6 +362,13 @@ export type Database = {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      exec_sql: {
+        Args: {
+          query: string
+        }
+        Returns: undefined
+      }
+    }
   }
 }

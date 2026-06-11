@@ -73,6 +73,7 @@ export default function CartDrawer() {
                       src={item.image_url || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop"}
                       alt={item.name}
                       fill
+                      sizes="80px"
                       className="object-cover"
                     />
                   </div>
@@ -80,11 +81,12 @@ export default function CartDrawer() {
                     <div className="flex justify-between items-start gap-2">
                       <h3 className="font-medium text-sm line-clamp-2 text-foreground/90">{item.name}</h3>
                       <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-muted-foreground hover:text-red-400 transition-colors mt-0.5"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-muted-foreground hover:text-red-400 transition-colors mt-0.5"
+                          aria-label={`Remove ${item.name} from cart`}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                     </div>
                     <p className="mt-1 text-sm text-muted font-medium">
                       KES {item.price.toLocaleString()}
@@ -94,6 +96,7 @@ export default function CartDrawer() {
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           className="p-1.5 hover:text-accent disabled:opacity-50 transition-colors"
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </button>
@@ -104,6 +107,7 @@ export default function CartDrawer() {
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           className="p-1.5 hover:text-accent disabled:opacity-50 transition-colors"
                           disabled={item.quantity >= item.stock}
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </button>

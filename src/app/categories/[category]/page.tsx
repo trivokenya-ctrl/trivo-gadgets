@@ -23,6 +23,8 @@ function getCategoryName(slug: string): string {
     "car-accessories": "Car Accessories",
     "smart-home": "Smart Home",
     "cables": "Cables",
+    "lighting": "Lighting",
+    "other": "Other",
   };
   return map[slug.toLowerCase()] || slug.charAt(0).toUpperCase() + slug.slice(1);
 }
@@ -33,8 +35,10 @@ function getDbCategoryName(slug: string): string {
     "car-accessories": "Car Accessories",
     "smart-home": "Smart Home",
     "cables": "Cables",
+    "lighting": "Lighting",
+    "other": "Other",
   };
-  return map[slug.toLowerCase()] || slug;
+  return map[slug.toLowerCase()] || slug.charAt(0).toUpperCase() + slug.slice(1);
 }
 
 function getCategoryDetails(slug: string) {

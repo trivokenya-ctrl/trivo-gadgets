@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Database } from "@/types/database.types";
+import { generateWhatsAppLink as genWhatsApp } from "@/lib/config";
 import { ArrowRight, Zap, Shield, Truck, Star } from "lucide-react";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -10,9 +11,7 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 export default function Hero({ product }: { product: Product | null }) {
   if (!product) return null;
 
-  const whatsappLink = `https://wa.me/254757512769?text=${encodeURIComponent(
-    `Hi! I'd like to order the ${product.name} at KES ${product.price.toLocaleString()}. Is it available?`
-  )}`;
+  const whatsappLink = genWhatsApp(product.name, product.price);
 
   return (
     <section className="relative w-full min-h-[88vh] flex items-center overflow-hidden bg-[#060608]">
@@ -114,10 +113,10 @@ export default function Hero({ product }: { product: Product | null }) {
                 KES {product.price.toLocaleString()}
               </span>
               <span className="text-sm text-neutral-500 line-through">
-                KES {Math.round(product.price * 1.2).toLocaleString()}
+                KES {Math.round(product.price * 1.15).toLocaleString()}
               </span>
               <span className="px-2 py-0.5 rounded-md text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20">
-                SAVE 20%
+                SAVE 13%
               </span>
             </div>
 

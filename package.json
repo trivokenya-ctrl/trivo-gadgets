@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:migrate": "node scripts/migrate.js"
+    "db:migrate": "node scripts/migrate.js",
+    "vercel-build": "node scripts/migrate.js && next build"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.64",

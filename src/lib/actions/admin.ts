@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerClient } from "@supabase/ssr";
-import { Database } from "@/types/database.types";
+import { Database, type Json } from "@/types/database.types";
 import { revalidatePath } from "next/cache";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -293,7 +293,8 @@ export async function createOrder(formData: FormData) {
   const customer_name = formData.get("customer_name") as string;
   const customer_phone = formData.get("customer_phone") as string;
   const customer_email = formData.get("customer_email") as string;
-  const items = JSON.parse(formData.get("items") as string);
+  let items: Json = [];
+  try { const parsed = JSON.parse(formData.get("items") as string); if (Array.isArray(parsed)) items = parsed as Json; } catch { items = []; }
   const subtotal = parseInt(formData.get("subtotal") as string) || 0;
   const delivery_fee = parseInt(formData.get("delivery_fee") as string) || 0;
   const total = parseInt(formData.get("total") as string) || 0;
@@ -301,16 +302,14 @@ export async function createOrder(formData: FormData) {
   const vendor_id = formData.get("vendor_id") as string || null;
   const notes = formData.get("notes") as string || null;
 
-  // Generate receipt number
+  // Generate receipt number with timestamp + random suffix to avoid race conditions
   const now = new Date();
   const yyyy = now.getFullYear().toString();
   const mm = (now.getMonth() + 1).toString().padStart(2, "0");
   const dd = now.getDate().toString().padStart(2, "0");
   const dateStr = `${yyyy}${mm}${dd}`;
-
-  const todayCount = await getTodaysOrderCount();
-  const seq = (todayCount + 1).toString().padStart(4, "0");
-  const receipt_number = `TRV-${dateStr}-${seq}`;
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const receipt_number = `TRV-${dateStr}-${rand}`;
 
   const { error } = await supabase.from("admin_orders").insert({
     receipt_number,

@@ -1,6 +1,18 @@
 -- ==============================================================================
 -- TRIVO KENYA - PRODUCTION-GRADE DATABASE SETUP
 -- ==============================================================================
+
+-- Bootstrap: exec_sql helper for auto-migrations (create once, use everywhere)
+CREATE OR REPLACE FUNCTION public.exec_sql(query text)
+RETURNS void
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  EXECUTE query;
+END;
+$$;
 -- This script configures the relational database schema, auto-sync triggers,
 -- Row Level Security (RLS) policies, and seed products for Trivo Kenya.
 -- Run this entire script inside the Supabase SQL Editor.
@@ -23,7 +35,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   description TEXT,
   price INTEGER NOT NULL, -- Price in KES (Kenyan Shillings)
   stock INTEGER DEFAULT 0,
-  category TEXT NOT NULL,
+  category TEXT,
   image_url TEXT,
   is_featured BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -268,6 +280,24 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
   role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Reviews Table (DB-backed reviews)
+CREATE TABLE IF NOT EXISTS public.reviews (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  customer_name TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  text TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read reviews" ON public.reviews;
+CREATE POLICY "Allow public read reviews" ON public.reviews FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert reviews" ON public.reviews;
+CREATE POLICY "Allow public insert reviews" ON public.reviews FOR INSERT WITH CHECK (true);
 
 -- Admin Orders Policies
 DROP POLICY IF EXISTS "Allow public read admin_orders by receipt" ON public.admin_orders;

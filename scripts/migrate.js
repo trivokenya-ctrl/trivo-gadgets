@@ -1,117 +1,98 @@
 // scripts/migrate.js
-// Auto-runs database.sql against your Supabase project.
-// Usage: npm run db:migrate
-// Requires: SUPABASE_ACCESS_TOKEN in .env.local
-//   -> Get yours at: https://supabase.com/dashboard/account/tokens
+// Auto-runs database.sql via Supabase's built-in exec_sql RPC.
+// Uses SUPABASE_SERVICE_ROLE_KEY (already in your project).
+// Runs automatically on every deploy via "vercel-build" in package.json.
+//
+// ONE-TIME SETUP (30 seconds):
+// Go to Supabase Dashboard → SQL Editor → paste and run database.sql
+// This creates the exec_sql() function. After that, this script runs
+// automatically on every deploy with zero manual steps.
 
+const { createClient } = require("@supabase/supabase-js");
 const fs = require("fs");
 const path = require("path");
 
-// ─── Load .env.local manually (no extra deps needed) ─────────────────────────
 function loadEnv() {
   const envPath = path.join(__dirname, "..", ".env.local");
-  if (!fs.existsSync(envPath)) {
-    console.error("❌ .env.local not found");
-    process.exit(1);
-  }
-  const lines = fs.readFileSync(envPath, "utf-8").split("\n");
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) continue;
-    const key = trimmed.slice(0, eqIdx).trim();
-    const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
-    if (!process.env[key]) process.env[key] = val;
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, "utf-8").split("\n");
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t || t.startsWith("#")) continue;
+      const i = t.indexOf("=");
+      if (i < 0) continue;
+      const k = t.slice(0, i).trim();
+      const v = t.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+      if (!process.env[k]) process.env[k] = v;
+    }
   }
 }
 
-// ─── Extract project ref from Supabase URL ────────────────────────────────────
-function getProjectRef(supabaseUrl) {
-  // e.g. https://giedhzkjhmtmvqbuwfoh.supabase.co
-  const match = supabaseUrl.match(/https:\/\/([a-z0-9]+)\.supabase\.co/);
-  if (!match) {
-    console.error("❌ Could not parse project ref from NEXT_PUBLIC_SUPABASE_URL");
-    process.exit(1);
-  }
-  return match[1];
+function parseStatements(sql) {
+  return sql
+    .split(";")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && !s.startsWith("--"))
+    .map((s) => s + ";");
 }
 
-async function runMigration() {
+async function run() {
   loadEnv();
 
-  const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!accessToken || accessToken === "your_supabase_access_token_here") {
-    console.error(`
-❌ SUPABASE_ACCESS_TOKEN is not set.
+  if (!url) { console.log("⚠️  NEXT_PUBLIC_SUPABASE_URL not set — skipping"); return; }
+  if (!key) { console.log("⚠️  SUPABASE_SERVICE_ROLE_KEY not set — skipping"); return; }
 
-To get your token (one-time setup):
-  1. Go to https://supabase.com/dashboard/account/tokens
-  2. Create a new token (e.g. "Trivo Migrations")
-  3. Add this to your .env.local:
-     SUPABASE_ACCESS_TOKEN=your_token_here
-  4. Run: npm run db:migrate
-    `);
-    process.exit(1);
-  }
-
-  if (!supabaseUrl) {
-    console.error("❌ NEXT_PUBLIC_SUPABASE_URL is not set in .env.local");
-    process.exit(1);
-  }
-
-  const projectRef = getProjectRef(supabaseUrl);
   const sqlPath = path.join(__dirname, "..", "database.sql");
-
-  if (!fs.existsSync(sqlPath)) {
-    console.error("❌ database.sql not found in project root");
-    process.exit(1);
-  }
+  if (!fs.existsSync(sqlPath)) { console.log("⚠️  database.sql not found — skipping"); return; }
 
   const sql = fs.readFileSync(sqlPath, "utf-8");
+  const statements = parseStatements(sql);
 
-  console.log(`🚀 Running database migration...`);
-  console.log(`   Project: ${projectRef}`);
-  console.log(`   SQL file: ${path.basename(sqlPath)} (${(sql.length / 1024).toFixed(1)} KB)\n`);
+  console.log(`📦 Running DB migration (${statements.length} statements)...`);
 
-  const apiUrl = `https://api.supabase.com/v1/projects/${projectRef}/database/query`;
+  const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-  let response;
-  try {
-    response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ query: sql }),
-    });
-  } catch (err) {
-    console.error("❌ Network error:", err.message);
-    process.exit(1);
+  // Check if exec_sql exists
+  const { error: checkErr } = await supabase.rpc("exec_sql", { query: "SELECT 1" });
+  if (checkErr) {
+    console.log(`
+⚠️  exec_sql() function not found.
+
+To enable auto-migrations, run this ONCE in your Supabase SQL Editor:
+
+  CREATE OR REPLACE FUNCTION public.exec_sql(query text)
+  RETURNS void SECURITY DEFINER SET search_path = public LANGUAGE plpgsql AS
+  \$\$ BEGIN EXECUTE query; END; \$\$;
+
+Or just paste and run database.sql entirely — it does the same.
+After that, migrations run automatically on every deploy.`);
+    return;
   }
 
-  const text = await response.text();
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = text;
+  let success = 0, skipped = 0, failed = 0;
+
+  for (const stmt of statements) {
+    if (/^(SELECT|DROP TRIGGER|DROP FUNCTION)\b/i.test(stmt)) { skipped++; continue; }
+    const { error } = await supabase.rpc("exec_sql", { query: stmt });
+    if (error) {
+      if (error.message?.toLowerCase().includes("already exists") ||
+          error.message?.toLowerCase().includes("duplicate")) {
+        skipped++;
+      } else {
+        console.log(`  ✗ ${stmt.slice(0, 70)}...`);
+        console.log(`    ${error.message}`);
+        failed++;
+      }
+    } else {
+      success++;
+    }
   }
 
-  if (!response.ok) {
-    console.error(`❌ Migration failed (HTTP ${response.status}):`);
-    console.error(typeof data === "object" ? JSON.stringify(data, null, 2) : data);
-    process.exit(1);
-  }
-
-  console.log("✅ Migration completed successfully!");
-  console.log("   All tables, policies, and seed data are up to date.\n");
+  console.log(`✅ Migration: ${success} ok, ${skipped} skipped, ${failed} failed`);
+  if (failed > 0) process.exit(1);
 }
 
-runMigration().catch((err) => {
-  console.error("❌ Unexpected error:", err);
-  process.exit(1);
-});
+run().catch((err) => { console.error("❌", err.message); process.exit(1); });

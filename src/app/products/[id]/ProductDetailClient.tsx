@@ -26,7 +26,6 @@ export default function ProductDetailClient({
   product: Product;
   relatedProducts: Product[];
 }) {
-  const whatsappLink = generateWhatsAppLink(product.name, product.price);
   const { addToCart } = useCart();
   const { hasItem, toggleItem } = useWishlist();
   const wished = hasItem(product.id);
@@ -56,6 +55,7 @@ export default function ProductDetailClient({
 
   const displayPrice = activeVariant ? activeVariant.price : product.price;
   const displayStock = activeVariant ? activeVariant.stock : product.stock;
+  const whatsappLink = generateWhatsAppLink(product.name, displayPrice, hasVariants && Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined);
 
   // Gallery: split image_url into multiple images (comma-separated) or use single
   const images = product.image_url
@@ -69,7 +69,8 @@ export default function ProductDetailClient({
   const handleAddToCart = () => {
     if (hasVariants && activeVariant) {
       const variantLabel = Object.values(activeVariant.options).join(" / ");
-      addToCart({ ...product, name: `${product.name} (${variantLabel})`, price: activeVariant.price, stock: activeVariant.stock });
+      const variantImage = activeVariant.image || product.image_url;
+      addToCart({ ...product, name: `${product.name} (${variantLabel})`, price: activeVariant.price, stock: activeVariant.stock, image_url: variantImage });
     } else {
       addToCart(product);
     }
