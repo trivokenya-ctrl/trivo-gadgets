@@ -29,11 +29,71 @@ function loadEnv() {
 }
 
 function parseStatements(sql) {
-  return sql
-    .split(";")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.startsWith("--"))
-    .map((s) => s + ";");
+  const statements = [];
+  let currentStmt = '';
+  let inDollarQuote = false;
+  let inSingleQuote = false;
+  let inLineComment = false;
+
+  for (let i = 0; i < sql.length; i++) {
+    const char = sql[i];
+    const nextChar = sql[i + 1] || '';
+
+    if (inLineComment) {
+      if (char === '\n') {
+        inLineComment = false;
+        currentStmt += char;
+      }
+      continue;
+    }
+
+    if (inSingleQuote) {
+      currentStmt += char;
+      if (char === "'") inSingleQuote = false;
+      continue;
+    }
+
+    if (inDollarQuote) {
+      currentStmt += char;
+      if (char === '$' && nextChar === '$') {
+        currentStmt += nextChar;
+        i++;
+        inDollarQuote = false;
+      }
+      continue;
+    }
+
+    if (char === '-' && nextChar === '-') {
+      inLineComment = true;
+      i++;
+      continue;
+    }
+
+    if (char === "'") {
+      inSingleQuote = true;
+      currentStmt += char;
+      continue;
+    }
+
+    if (char === '$' && nextChar === '$') {
+      inDollarQuote = true;
+      currentStmt += char + nextChar;
+      i++;
+      continue;
+    }
+
+    if (char === ';') {
+      const trimmed = currentStmt.trim();
+      if (trimmed) statements.push(trimmed + ';');
+      currentStmt = '';
+      continue;
+    }
+
+    currentStmt += char;
+  }
+
+  if (currentStmt.trim()) statements.push(currentStmt.trim() + ';');
+  return statements;
 }
 
 async function run() {
@@ -78,8 +138,10 @@ After that, migrations run automatically on every deploy.`);
     if (/^(SELECT|DROP TRIGGER|DROP FUNCTION)\b/i.test(stmt)) { skipped++; continue; }
     const { error } = await supabase.rpc("exec_sql", { query: stmt });
     if (error) {
-      if (error.message?.toLowerCase().includes("already exists") ||
-          error.message?.toLowerCase().includes("duplicate")) {
+      const msg = error.message?.toLowerCase() || "";
+      if (msg.includes("already exists") ||
+          msg.includes("duplicate") ||
+          msg.includes("must be owner")) {
         skipped++;
       } else {
         console.log(`  ✗ ${stmt.slice(0, 70)}...`);
