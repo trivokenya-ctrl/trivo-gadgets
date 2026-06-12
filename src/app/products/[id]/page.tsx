@@ -93,6 +93,20 @@ export default async function ProductPage({ params }: Props) {
           }),
         }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://trivokenya.store" },
+              { "@type": "ListItem", position: 2, name: "All Products", item: "https://trivokenya.store/products" },
+              { "@type": "ListItem", position: 3, name: product.name },
+            ],
+          }),
+        }}
+      />
       <ProductDetailClient product={product} relatedProducts={related || []} />
     </>
   );
