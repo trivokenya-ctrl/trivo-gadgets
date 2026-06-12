@@ -1,7 +1,19 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createStaticClient } from "@supabase/supabase-js";
 import type { Metadata } from "next";
 import ProductDetailClient from "./ProductDetailClient";
+
+export const dynamic = "force-dynamic";
+
+export async function generateStaticParams() {
+  const supabase = createStaticClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: products } = await supabase.from("products").select("id");
+  return (products || []).map((p) => ({ id: p.id }));
+}
 
 type Props = { params: { id: string } };
 
