@@ -38,7 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           quality={100}
-          className="object-contain mix-blend-multiply dark:mix-blend-normal transition-transform duration-500 group-hover:scale-105 p-4 sm:p-8"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         
         {/* Wishlist Heart - top left */}

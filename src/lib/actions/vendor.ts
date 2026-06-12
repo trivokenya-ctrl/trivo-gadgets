@@ -3,6 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { Database } from "@/types/database.types";
 import { revalidatePath } from "next/cache";
+import { upscaleImage } from "@/lib/upscale";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -100,20 +101,35 @@ export async function createVendorProduct(formData: FormData, vendorId: string) 
   let final_image_url = image_url;
 
   if (image_file && image_file.size > 0) {
-    const fileExt = image_file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    
+    const arrayBuffer = await image_file.arrayBuffer();
+    const inputBuffer = Buffer.from(arrayBuffer);
+    const { buffer, ext } = await upscaleImage(inputBuffer);
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
     const { error: uploadError } = await adminClient.storage
       .from("product-images")
-      .upload(fileName, image_file);
-      
+      .upload(fileName, buffer, { contentType: `image/${ext === "jpg" ? "jpeg" : ext}` });
     if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-    
     const { data: { publicUrl } } = adminClient.storage
       .from("product-images")
       .getPublicUrl(fileName);
-      
     final_image_url = publicUrl;
+  } else if (image_url && image_url.startsWith("http")) {
+    try {
+      const res = await fetch(image_url);
+      if (res.ok) {
+        const inputBuffer = Buffer.from(await res.arrayBuffer());
+        const { buffer, ext } = await upscaleImage(inputBuffer);
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadError } = await adminClient.storage
+          .from("product-images")
+          .upload(fileName, buffer, { contentType: `image/${ext === "jpg" ? "jpeg" : ext}` });
+        if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
+        const { data: { publicUrl } } = adminClient.storage
+          .from("product-images")
+          .getPublicUrl(fileName);
+        final_image_url = publicUrl;
+      }
+    } catch {}
   }
 
   let parsedFeatures: string[] = [];
