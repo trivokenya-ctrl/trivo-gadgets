@@ -54,6 +54,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: "bRywbYsy_4fiLkqmp71IbeHcPh-MGfZ1d5Tlot-5mJw",
+  },
   keywords: ["premium tech gadgets Kenya", "smart home devices Kenya", "tech accessories Kenya", "Trivo Kenya", "online gadget store Kenya"],
 };
 
