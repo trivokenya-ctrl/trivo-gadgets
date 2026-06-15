@@ -4,7 +4,9 @@ import { Resend } from "resend";
 
 export const dynamic = "force-dynamic";
 
-
+export async function GET() {
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
+}
 
 export async function POST(req: NextRequest) {
   const supabaseAdmin = createClient(

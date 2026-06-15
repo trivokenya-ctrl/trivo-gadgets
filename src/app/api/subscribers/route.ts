@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getResendClient } from "@/lib/resend";
 
+export async function GET() {
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
+}
+
 async function verifyToken(token: string, ip: string): Promise<[boolean, string[]]> {
   const payload: Record<string, string> = {
     secret: process.env.HCAPTCHA_SECRET_KEY || "",

@@ -7,6 +7,10 @@ const openrouter = createOpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+export async function GET() {
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
+}
+
 // Simple in-memory rate limiter
 const rateLimitCache = new Map<string, { count: number; timestamp: number }>();
 const RATE_LIMIT = 5; // requests

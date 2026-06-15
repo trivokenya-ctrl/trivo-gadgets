@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 let cachedToken: { token: string; expiresAt: number } | null = null;
 const TTL = 20 * 60 * 1000;
 
+export async function GET() {
+  return NextResponse.json({ error: "Not found" }, { status: 404 });
+}
+
 export async function POST() {
   if (cachedToken && Date.now() < cachedToken.expiresAt) {
     return NextResponse.json({ accessToken: cachedToken.token });
