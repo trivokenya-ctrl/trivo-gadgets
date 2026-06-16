@@ -190,25 +190,7 @@ export default function Hero({ product }: { product: Product | null }) {
                 </div>
               </div>
 
-              {/* Floating Cards */}
-              <div className={`absolute -bottom-6 -left-6 sm:-left-12 p-4 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl z-30 transition-all duration-1000 delay-500 transform ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                <div className="flex items-center gap-4">
-                  <div className="flex -space-x-3">
-                    {["https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", 
-                      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", 
-                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"].map((src, i) => (
-                      <div key={i} className="w-10 h-10 rounded-full border-2 border-black overflow-hidden">
-                        <Image src={src} alt="Customer" width={40} height={40} className="object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <div className="text-white font-bold text-sm">Best Seller</div>
-                    <div className="text-neutral-400 text-xs">Loved by creators</div>
-                  </div>
-                </div>
-              </div>
-              
+              {/* Floating Cards (removed Best Seller) */}
               <div className={`absolute -top-6 -right-6 sm:-right-8 px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 backdrop-blur-xl border border-white/20 shadow-2xl z-30 transition-all duration-1000 delay-700 transform ${mounted ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'}`}>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
